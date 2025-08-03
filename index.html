@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Familienbaum</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- D3.js CDN for visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        /* Grundlegende Body-Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #334155;
+        }
+
+        /* Container-Styles für Hauptbereiche und Modale */
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* rounded-3xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* p-10 */
+            width: 100%;
+            max-width: 1200px;
+            transition: all 0.3s ease-in-out;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Button-Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600; /* font-semibold */
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca; /* indigo-700 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569; /* slate-600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-danger {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* red-600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Formular-Input-Styles */
+        input[type="text"], input[type="date"], input[type="email"], input[type="password"], select {
+            padding: 0.75rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid #cbd5e1; /* slate-300 */
+            width: 100%;
+            font-size: 1rem;
+            color: #334155;
+            transition: all 0.2s ease-in-out;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5; /* indigo-600 */
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* ring-indigo-200 */
+        }
+
+        /* Modal-Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2.5rem; /* p-10 */
+            border-radius: 1.5rem; /* rounded-3xl */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 500px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        /* D3.js Baum-Visualisierungs-Styles */
+        .tree-container {
+            width: 100%;
+            overflow-x: auto; /* Ermöglicht horizontales Scrollen bei breiten Bäumen */
+            padding: 20px 0;
+            text-align: center;
+            min-height: 400px; /* Mindesthöhe für den Baum */
+        }
+
+        .node circle {
+            fill: #e0e7ff; /* indigo-100 */
+            stroke: #6366f1; /* indigo-500 */
+            stroke-width: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .node text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            fill: #3730a3; /* indigo-800 */
+            text-anchor: middle;
+            pointer-events: none; /* Ermöglicht Klick durch auf den Kreis */
+            transition: all 0.2s ease-in-out;
+        }
+
+        .node.highlighted circle {
+            fill: #fcd34d; /* amber-300 */
+            stroke: #fbbf24; /* amber-400 */
+            stroke-width: 3px;
+        }
+
+        .node.highlighted text {
+            fill: #92400e; /* amber-800 */
+        }
+
+        .link {
+            fill: none;
+            stroke: #94a3b8; /* slate-400 */
+            stroke-width: 1.5px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .spouse-link {
+            fill: none;
+            stroke: #ef4444; /* red-500 */
+            stroke-width: 2px;
+            stroke-dasharray: 5 5; /* Gestrichelte Linie */
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Lade-Spinner-Styles */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4f46e5;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        /* Tooltip-Styles */
+        #tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+        #tooltip p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+        #tooltip p strong {
+            color: #4f46e5;
+        }
+
+        /* Keyframe-Animationen */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Anpassungen */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .modal-content {
+                padding: 1.5rem;
+            }
+            .btn {
+                width: 100%;
+            }
+            .flex-wrap-mobile {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .flex-wrap-mobile > button {
+                width: calc(50% - 0.5rem); /* Anpassung für Lücke */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-section" class="container text-center mb-8">
+        <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Willkommen zum Familienbaum</h2>
+        <p class="text-gray-600 mb-6">Bitte melden Sie sich an, um Ihren Familienbaum zu verwalten.</p>
+
+        <!-- Login Formular -->
+        <form id="login-form" class="space-y-4 max-w-sm mx-auto mb-8">
+            <div>
+                <label for="login-email" class="sr-only">E-Mail</label>
+                <input type="email" id="login-email" placeholder="E-Mail" required>
+            </div>
+            <div>
+                <label for="login-password" class="sr-only">Passwort</label>
+                <input type="password" id="login-password" placeholder="Passwort" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">
+                <i class="fas fa-sign-in-alt"></i> Anmelden
+            </button>
+        </form>
+    </div>
+
+    <div id="app-section" class="container hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+            <h2 class="text-3xl font-extrabold text-gray-800">Ihr Familienbaum</h2>
+            <div class="flex gap-4 flex-wrap-mobile w-full sm:w-auto">
+                <button id="add-person-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Person hinzufügen
+                </button>
+                <button id="export-data-btn" class="btn btn-secondary">
+                    <i class="fas fa-download"></i> Daten exportieren
+                </button>
+                <button id="import-data-btn" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i> Daten importieren
+                </button>
+                <input type="file" id="import-file-input" accept=".json" class="hidden">
+                <button id="logout-btn" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Abmelden
+                </button>
+            </div>
+        </div>
+
+        <div id="user-info" class="text-sm text-gray-500 mb-4">
+            Angemeldet als: <span id="current-user-id" class="font-mono text-gray-700"></span>
+        </div>
+
+        <!-- Suchleiste -->
+        <div class="mb-6">
+            <label for="search-input" class="sr-only">Person suchen</label>
+            <input type="text" id="search-input" placeholder="Person nach Name suchen..." class="w-full">
+        </div>
+
+        <div class="loading-spinner" id="loading-spinner"></div>
+
+        <div id="family-tree-display" class="tree-container">
+            <!-- D3.js SVG-Baum wird hier gerendert -->
+            <p id="no-data-message" class="text-gray-500 text-lg hidden">Noch keine Personen im Familienbaum. Fügen Sie eine hinzu!</p>
+        </div>
+    </div>
+
+    <!-- Modal für Person hinzufügen/bearbeiten -->
+    <div id="person-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-6">Person hinzufügen</h3>
+            <form id="person-form" class="space-y-5">
+                <div>
+                    <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Name:</label>
+                    <input type="text" id="name" placeholder="Vollständiger Name" required>
+                </div>
+                <div>
+                    <label for="birthDate" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsdatum:</label>
+                    <input type="date" id="birthDate">
+                </div>
+                <div>
+                    <label for="gender" class="block text-gray-700 text-sm font-semibold mb-2">Geschlecht:</label>
+                    <select id="gender" required>
+                        <option value="">Wählen Sie ein Geschlecht</option>
+                        <option value="male">Männlich</option>
+                        <option value="female">Weiblich</option>
+                        <option value="other">Andere</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="parent1" class="block text-gray-700 text-sm font-semibold mb-2">Elternteil 1 (optional):</label>
+                    <select id="parent1">
+                        <option value="">Kein Elternteil</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="parent2" class="block text-gray-700 text-sm font-semibold mb-2">Elternteil 2 (optional):</label>
+                    <select id="parent2">
+                        <option value="">Kein Elternteil</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="spouse" class="block text-gray-700 text-sm font-semibold mb-2">Ehepartner (optional):</label>
+                    <select id="spouse">
+                        <option value="">Kein Ehepartner</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancel-btn" class="btn btn-secondary">Abbrechen</button>
+                    <button type="submit" id="save-person-btn" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal für Bestätigung (Löschen) -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Bestätigen Sie die Löschung</h3>
+            <p class="text-gray-700 mb-8">Sind Sie sicher, dass Sie <span id="confirm-person-name" class="font-semibold"></span> aus dem Familienbaum löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <div class="flex justify-end gap-4">
+                <button type="button" id="cancel-delete-btn" class="btn btn-secondary">Abbrechen</button>
+                <button type="button" id="confirm-delete-btn" class="btn btn-danger">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generisches Nachrichten-Modal -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="message-modal-title" class="text-2xl font-bold text-gray-800 mb-6">Nachricht</h3>
+            <p id="message-modal-text" class="text-gray-700 mb-8"></p>
+            <div class="flex justify-end">
+                <button class="btn btn-primary" id="close-message-modal">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip für D3.js Knoten -->
+    <div id="tooltip" class="rounded-lg shadow-lg p-3 bg-white text-sm"></div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // Global variables for Firebase config and app ID
+        // IMPORTANT: Replace the placeholder below with your actual Firebase project configuration.
+        // You can find this in your Firebase project settings -> Project settings -> General -> Your apps -> Firebase SDK snippet (Config).
+        const firebaseConfigPlaceholder = {
+          const firebaseConfig = {
+          apiKey: "AIzaSyAgMUEnYEaAcbmwvmrHVBMr7dlL52CciRk",
+          authDomain: "stamm-baum-ludwig.firebaseapp.com",
+          databaseURL: "https://stamm-baum-ludwig-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "stamm-baum-ludwig",
+          storageBucket: "stamm-baum-ludwig.firebasestorage.app",
+          messagingSenderId: "898486161819",
+          appId: "1:898486161819:web:28e7c9775f9406412f913e"
+        };
+      
+
+        // Use the placeholder config for production.
+        // In the Canvas environment, __app_id and __firebase_config are automatically provided.
+        // For GitHub deployment, you will use firebaseConfigPlaceholder.
+        const appId = firebaseConfigPlaceholder.appId; // Use the app ID from your config
+        const firebaseConfig = firebaseConfigPlaceholder;
+
+        let app;
+        let auth;
+        let db;
+        let userId = null;
+        let familyMembers = {}; // Stores all family members as an object {id: personData}
+        let currentSearchQuery = ''; // Stores the current search query
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const loginForm = document.getElementById('login-form');
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
+        const logoutBtn = document.getElementById('logout-btn');
+        const addPersonBtn = document.getElementById('add-person-btn');
+        const exportDataBtn = document.getElementById('export-data-btn');
+        const importDataBtn = document.getElementById('import-data-btn');
+        const importFileInput = document.getElementById('import-file-input');
+        const familyTreeDisplay = document.getElementById('family-tree-display');
+        const personModal = document.getElementById('person-modal');
+        const confirmModal = document.getElementById('confirm-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const personForm = document.getElementById('person-form');
+        const nameInput = document.getElementById('name');
+        const birthDateInput = document.getElementById('birthDate');
+        const genderSelect = document.getElementById('gender');
+        const parent1Select = document.getElementById('parent1');
+        const parent2Select = document.getElementById('parent2');
+        const spouseSelect = document.getElementById('spouse');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const savePersonBtn = document.getElementById('save-person-btn');
+        const confirmPersonName = document.getElementById('confirm-person-name');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const currentUserIdSpan = document.getElementById('current-user-id');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const noDataMessage = document.getElementById('no-data-message');
+        const searchInput = document.getElementById('search-input');
+        const messageModal = document.getElementById('message-modal');
+        const messageModalTitle = document.getElementById('message-modal-title');
+        const messageModalText = document.getElementById('message-modal-text');
+        const closeMessageModalBtn = document.getElementById('close-message-modal');
+        const tooltip = d3.select("#tooltip"); // D3.js Tooltip Element
+
+        let editingPersonId = null; // Stores the ID of the person currently being edited
+        let deletingPersonId = null; // Stores the ID of the person to be deleted
+
+        // D3.js Configuration
+        const margin = { top: 60, right: 90, bottom: 60, left: 90 };
+        let width = 0;
+        let height = 0;
+        const nodeRadius = 30; // Radius of the circle for each node
+        const textOffset = 45; // Distance of the text from the circle
+
+        let svg; // The SVG element for the tree
+        let g;   // Group for the tree (for transformations)
+        let treeLayout; // D3 tree layout
+
+        // --- Firebase Initialization and Authentication ---
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getDatabase(app);
+
+                // Listener for authentication status changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        currentUserIdSpan.textContent = userId;
+                        authSection.classList.add('hidden');
+                        appSection.classList.remove('hidden');
+                        console.log("User logged in:", userId);
+                        // Fetch data once the user is logged in
+                        listenForFamilyData();
+                    } else {
+                        userId = null;
+                        currentUserIdSpan.textContent = '';
+                        authSection.classList.remove('hidden');
+                        appSection.classList.add('hidden');
+                        familyMembers = {}; // Clear tree data
+                        renderFamilyTree(); // Re-render tree (empty)
+                        console.log("User logged out.");
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error during Firebase initialization:", error);
+                showModalMessage("Error", `There was a problem loading the application: ${error.message}`);
+            }
+        }
+
+        // --- Login Function ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+            loadingSpinner.classList.add('active');
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showModalMessage("Success", "Successfully logged in!");
+            } catch (error) {
+                console.error("Login failed:", error);
+                showModalMessage("Login Error", `Login failed: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.remove('active');
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            loadingSpinner.classList.add('active');
+            try {
+                await signOut(auth);
+                showModalMessage("Logout", "You have been successfully logged out.");
+            } catch (error) {
+                console.error("Logout failed:", error);
+                showModalMessage("Logout Error", `Logout failed: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.remove('active');
+            }
+        });
+
+        // --- Firebase Realtime Database Operations ---
+        function getFamilyRef() {
+            if (!userId) {
+                console.error("No user ID available. Cannot access the database.");
+                return null;
+            }
+            // Path: /artifacts/{appId}/users/{userId}/familyTree
+            // This is the path where data for the logged-in user will be stored.
+            return ref(db, `artifacts/${appId}/users/${userId}/familyTree`);
+        }
+
+        function listenForFamilyData() {
+            const familyRef = getFamilyRef();
+            if (!familyRef) return;
+
+            loadingSpinner.classList.add('active');
+            // onValue listens for real-time changes and updates the UI
+            onValue(familyRef, (snapshot) => {
+                familyMembers = {}; // Clear before updating
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    // Load data into the familyMembers object, using keys as IDs
+                    Object.keys(data).forEach(key => {
+                        familyMembers[key] = { id: key, ...data[key] };
+                    });
+                    noDataMessage.classList.add('hidden');
+                } else {
+                    noDataMessage.classList.remove('hidden');
+                }
+                renderFamilyTree(currentSearchQuery); // Re-render tree with current search filter
+                loadingSpinner.classList.remove('active');
+            }, (error) => {
+                console.error("Error fetching family data:", error);
+                showModalMessage("Data Error", `Error loading family data: ${error.message}`);
+                loadingSpinner.classList.remove('active');
+            });
+        }
+
+        async function addOrUpdatePerson(personData) {
+            const familyRef = getFamilyRef();
+            if (!familyRef) return;
+
+            loadingSpinner.classList.add('active');
+            try {
+                const oldSpouseId = editingPersonId ? familyMembers[editingPersonId]?.spouseId : null;
+
+                if (editingPersonId) {
+                    // Edit person: update data
+                    await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${editingPersonId}`), personData);
+
+                    // Handle spouse relationship updates
+                    // If old spouse exists and has changed, unpair old spouse
+                    if (oldSpouseId && oldSpouseId !== personData.spouseId) {
+                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${oldSpouseId}`), { spouseId: '' });
+                    }
+                    // If new spouse is set and is not the current person, pair new spouse
+                    if (personData.spouseId && personData.spouseId !== editingPersonId) {
+                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: editingPersonId });
+                    }
+
+                    console.log("Person successfully updated:", editingPersonId);
+                } else {
+                    // Add new person: generate new key and set data
+                    const newPersonRef = push(familyRef);
+                    await set(newPersonRef, personData);
+
+                    // If a spouse was set, also update the spouse's spouseId
+                    if (personData.spouseId) {
+                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: newPersonRef.key });
+                    }
+                    console.log("New person successfully added:", newPersonRef.key);
+                }
+                closePersonModal();
+            } catch (error) {
+                console.error("Error saving person:", error);
+                showModalMessage("Save Error", `Error saving person: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.remove('active');
+            }
+        }
+
+        async function deletePerson(personId) {
+            const familyRef = getFamilyRef();
+            if (!familyRef) return;
+
+            loadingSpinner.classList.add('active');
+            try {
+                const personToDelete = familyMembers[personId];
+
+                // Remove all references to this person as parent or spouse
+                const updates = {};
+                Object.values(familyMembers).forEach(member => {
+                    if (member.parent1 === personId) {
+                        updates[`${member.id}/parent1`] = '';
+                    }
+                    if (member.parent2 === personId) {
+                        updates[`${member.id}/parent2`] = '';
+                    }
+                    if (member.spouseId === personId) {
+                        updates[`${member.id}/spouseId`] = '';
+                    }
+                });
+
+                // Also unpair the spouse, if any
+                if (personToDelete && personToDelete.spouseId) {
+                    updates[`${personToDelete.spouseId}/spouseId`] = '';
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await update(familyRef, updates);
+                }
+
+                // Then delete the person itself
+                await remove(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personId}`));
+                console.log("Person successfully deleted:", personId);
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error deleting person:", error);
+                showModalMessage("Delete Error", `Error deleting person: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.remove('active');
+            }
+        }
+
+        // --- D3.js Visualization ---
+        function renderFamilyTree(searchQuery = '') {
+            familyTreeDisplay.innerHTML = ''; // Clear before redrawing
+            const membersArray = Object.values(familyMembers);
+
+            if (membersArray.length === 0) {
+                noDataMessage.classList.remove('hidden');
+                return;
+            } else {
+                noDataMessage.classList.add('hidden');
+            }
+
+            // Person IDs for highlighting based on search
+            const highlightedPersonIds = new Set(membersArray
+                .filter(person => person.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map(person => person.id));
+
+            // Build hierarchical data structure for D3.js
+            // Find all potential root nodes (persons with no parents)
+            const rootCandidates = membersArray.filter(p => !p.parent1 && !p.parent2);
+
+            let treeData;
+            if (rootCandidates.length === 0 && membersArray.length > 0) {
+                // If no one without parents is found, take the first person as a fallback root
+                // This might lead to a disconnected tree representation if there are multiple independent lines.
+                // An artificial root is created to connect all persons.
+                treeData = { id: "artificial-root", name: "Family Tree", children: membersArray.map(p => buildTreeData(p.id)) };
+            } else if (rootCandidates.length === 1) {
+                treeData = buildTreeData(rootCandidates[0].id);
+            } else if (rootCandidates.length > 1) {
+                // If multiple roots exist, create an artificial super-root
+                treeData = {
+                    id: "super-root",
+                    name: "Entire Family Tree",
+                    children: rootCandidates.map(p => buildTreeData(p.id))
+                };
+            } else {
+                // No data available
+                noDataMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Recursive function to build the D3 hierarchy data
+            function buildTreeData(personId) {
+                const person = familyMembers[personId];
+                if (!person) return null;
+
+                const children = membersArray.filter(p => p.parent1 === personId || p.parent2 === personId);
+                return {
+                    id: person.id,
+                    name: person.name,
+                    birthDate: person.birthDate,
+                    gender: person.gender,
+                    spouseId: person.spouseId,
+                    _children: null, // For collapse/expand
+                    children: children.map(c => buildTreeData(c.id)).filter(Boolean) // Recursive call
+                };
+            }
+
+            // Set SVG dimensions dynamically
+            const containerWidth = familyTreeDisplay.clientWidth;
+            // Estimated height based on number of nodes and depth
+            const estimatedDepth = d3.max(Object.values(familyMembers), d => {
+                let depth = 0;
+                let current = d;
+                while (current && (current.parent1 || current.parent2)) {
+                    depth++;
+                    current = familyMembers[current.parent1 || current.parent2]; // Follow one parent path
+                }
+                return depth;
+            });
+            height = Math.max(400, (estimatedDepth + 1) * 100); // Node spacing + margin
+            width = containerWidth - margin.left - margin.right;
+            if (width < 300) width = 300; // Minimum width
+
+            svg = d3.select("#family-tree-display").append("svg")
+                .attr("width", containerWidth)
+                .attr("height", height + margin.top + margin.bottom)
+                .attr("viewBox", `0 0 ${containerWidth} ${height + margin.top + margin.bottom}`)
+                .attr("preserveAspectRatio", "xMidYMid meet");
+
+            g = svg.append("g")
+                .attr("transform", `translate(${margin.left + width / 2},${margin.top})`); // Center the tree
+
+            treeLayout = d3.tree().size([width, height]);
+
+            const root = d3.hierarchy(treeData);
+
+            // Function to update the tree (used for initial render and collapse/expand)
+            function updateTree(source) {
+                const treeNodes = treeLayout(root);
+                const nodes = treeNodes.descendants().filter(d => d.data.id !== "super-root" && d.data.id !== "artificial-root"); // Filter artificial roots
+                const links = treeNodes.links();
+
+                // Normalize for fixed-depth.
+                nodes.forEach(d => { d.y = d.depth * 100; }); // Adjust vertical spacing
+
+                // Update the links
+                const link = g.selectAll(".link")
+                    .data(links, d => d.target.id);
+
+                // Enter any new links at the parent's previous position.
+                const linkEnter = link.enter().append("path", "g")
+                    .attr("class", "link")
+                    .attr("d", d3.linkVertical()
+                        .x(source.x0 || source.x)
+                        .y(source.y0 || source.y));
+
+                // Transition links to their new position.
+                link.merge(linkEnter).transition()
+                    .duration(500)
+                    .attr("d", d3.linkVertical()
+                        .x(d => d.x)
+                        .y(d => d.y));
+
+                // Transition exiting links to the parent's new position.
+                link.exit().transition()
+                    .duration(500)
+                    .attr("d", d3.linkVertical()
+                        .x(d => source.x)
+                        .y(d => source.y))
+                    .remove();
+
+                // Update the nodes
+                const node = g.selectAll(".node")
+                    .data(nodes, d => d.id);
+
+                // Enter any new nodes at the parent's previous position.
+                const nodeEnter = node.enter().append("g")
+                    .attr("class", d => `node ${d.children ? "node--internal" : "node--leaf"} ${highlightedPersonIds.has(d.data.id) ? 'highlighted' : ''}`)
+                    .attr("transform", d => `translate(${source.x0 || source.x},${source.y0 || source.y})`)
+                    .on("click", (event, d) => toggleNode(event, d)); // Collapse/expand on node click
+
+                nodeEnter.append("circle")
+                    .attr("r", nodeRadius);
+
+                nodeEnter.append("text")
+                    .attr("dy", textOffset) // Below the circle
+                    .text(d => d.data.name);
+
+                // Add foreignObject for buttons and info
+                nodeEnter.append("foreignObject")
+                    .attr("x", -nodeRadius)
+                    .attr("y", nodeRadius + 10)
+                    .attr("width", nodeRadius * 2)
+                    .attr("height", 40)
+                    .html(d => `
+                        <div class="flex justify-center gap-1 text-xs">
+                            ${(d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? `<button class="toggle-btn text-white bg-slate-500 hover:bg-slate-600 rounded-md px-2 py-1" title="${d._children ? 'Expand' : 'Collapse'}">
+                                <i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i>
+                            </button>` : ''}
+                            <button class="edit-btn text-white bg-indigo-400 hover:bg-indigo-500 rounded-md px-2 py-1" data-id="${d.data.id}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn text-white bg-red-500 hover:bg-red-600 rounded-md px-2 py-1" data-id="${d.data.id}" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    `);
+
+                // Add tooltips
+                nodeEnter.on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px")
+                        .html(`
+                            <p><strong>Name:</strong> ${d.data.name}</p>
+                            <p><strong>Geburtsdatum:</strong> ${formatDate(d.data.birthDate)}</p>
+                            <p><strong>Geschlecht:</strong> ${getGenderDisplay(d.data.gender)}</p>
+                            ${d.data.spouseId ? `<p><strong>Ehepartner:</strong> ${familyMembers[d.data.spouseId]?.name || 'Unknown'}</p>` : ''}
+                            ${(d.data.parent1 || d.data.parent2) ? `<p><strong>Eltern:</strong> ${familyMembers[d.data.parent1]?.name || 'N/A'} & ${familyMembers[d.data.parent2]?.name || 'N/A'}</p>` : ''}
+                        `);
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                });
+
+
+                // Transition nodes to their new position.
+                const nodeUpdate = node.merge(nodeEnter).transition()
+                    .duration(500)
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+
+                nodeUpdate.select("circle")
+                    .attr("r", nodeRadius)
+                    .attr("class", d => highlightedPersonIds.has(d.data.id) ? 'highlighted' : ''); // Update highlight class
+
+                nodeUpdate.select("text")
+                    .text(d => d.data.name);
+
+                // Update buttons in foreignObject (e.g., toggle icon)
+                nodeUpdate.select("foreignObject").select(".toggle-btn")
+                    .html(d => `<i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i>`)
+                    .attr("title", d => d._children ? 'Expand' : 'Collapse')
+                    .style("display", d => (d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? 'inline-flex' : 'none');
+
+
+                // Transition exiting nodes to the parent's new position.
+                const nodeExit = node.exit().transition()
+                    .duration(500)
+                    .attr("transform", d => `translate(${source.x},${source.y})`)
+                    .remove();
+
+                nodeExit.select("circle")
+                    .attr("r", 0);
+
+                nodeExit.select("text")
+                    .style("fill-opacity", 0);
+
+                // Store the old positions for transition.
+                nodes.forEach(d => {
+                    d.x0 = d.x;
+                    d.y0 = d.y;
+                });
+
+                // Re-attach event listeners for buttons within foreignObject after D3 update
+                svg.selectAll(".edit-btn").on("click", function(event) {
+                    event.stopPropagation(); // Prevents the click from also triggering the circle
+                    const id = d3.select(this).attr("data-id");
+                    openPersonModalForEdit(id);
+                });
+
+                svg.selectAll(".delete-btn").on("click", function(event) {
+                    event.stopPropagation(); // Prevents the click from also triggering the circle
+                    const id = d3.select(this).attr("data-id");
+                    openConfirmModal(id);
+                });
+
+                svg.selectAll(".toggle-btn").on("click", function(event, d) {
+                    event.stopPropagation(); // Prevents the click from also triggering the node
+                    toggleNode(event, d);
+                });
+
+                // Draw spouse links
+                drawSpouseLinks(nodes);
+            }
+
+            // Toggle children on click.
+            function toggleNode(event, d) {
+                // Do not collapse artificial roots
+                if (d.data.id === "super-root" || d.data.id === "artificial-root") return;
+
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                updateTree(d);
+            }
+
+            // Function to draw spouse links
+            function drawSpouseLinks(nodes) {
+                // Remove existing spouse links
+                g.selectAll(".spouse-link").remove();
+
+                const spouseLinks = [];
+                const nodeMap = new Map(nodes.map(d => [d.data.id, d])); // Map node ID to D3 node object
+
+                // Iterate through persons and find their spouses
+                Object.values(familyMembers).forEach(person => {
+                    if (person.spouseId && nodeMap.has(person.id) && nodeMap.has(person.spouseId)) {
+                        const personNode = nodeMap.get(person.id);
+                        const spouseNode = nodeMap.get(person.spouseId);
+
+                        // Ensure each pair is only added once (e.g., A-B, not B-A)
+                        if (person.id < person.spouseId) { // Arbitrary order to avoid duplicates
+                            spouseLinks.push({
+                                source: personNode,
+                                target: spouseNode
+                            });
+                        }
+                    }
+                });
+
+                g.selectAll(".spouse-link")
+                    .data(spouseLinks)
+                    .enter().append("line")
+                    .attr("class", "spouse-link")
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y - nodeRadius) // Slightly above the node
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y - nodeRadius); // Slightly above the node
+            }
+
+            // Initial call to update the tree
+            updateTree(root);
+
+            // Optional: Pan and Zoom functionality
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                });
+            svg.call(zoom);
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('de-DE', options);
+            } catch (e) {
+                return dateString; // Fallback if date is invalid
+            }
+        }
+
+        function getGenderDisplay(gender) {
+            switch (gender) {
+                case 'male': return 'Männlich';
+                case 'female': return 'Weiblich';
+                case 'other': return 'Andere';
+                default: return 'N/A';
+            }
+        }
+
+        function populateSelects(currentPersonId = null) {
+            parent1Select.innerHTML = '<option value="">Kein Elternteil</option>';
+            parent2Select.innerHTML = '<option value="">Kein Elternteil</option>';
+            spouseSelect.innerHTML = '<option value="">Kein Ehepartner</option>';
+
+            Object.values(familyMembers).forEach(person => {
+                // Prevent a person from being their own parent or spouse
+                if (person.id !== currentPersonId) {
+                    const option1 = document.createElement('option');
+                    option1.value = person.id;
+                    option1.textContent = person.name;
+                    parent1Select.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = person.id;
+                    option2.textContent = person.name;
+                    parent2Select.appendChild(option2);
+
+                    const spouseOption = document.createElement('option');
+                    spouseOption.value = person.id;
+                    spouseOption.textContent = person.name;
+                    spouseSelect.appendChild(spouseOption);
+                }
+            });
+        }
+
+        // --- Modal Functions ---
+        function openPersonModalForAdd() {
+            modalTitle.textContent = 'Person hinzufügen';
+            personForm.reset();
+            editingPersonId = null;
+            populateSelects(); // Empty selections for new person
+            personModal.classList.add('open');
+        }
+
+        function openPersonModalForEdit(id) {
+            const person = familyMembers[id];
+            if (!person) {
+                showModalMessage("Fehler", "Person nicht gefunden.");
+                return;
+            }
+            modalTitle.textContent = 'Person bearbeiten';
+            nameInput.value = person.name;
+            birthDateInput.value = person.birthDate || '';
+            genderSelect.value = person.gender || '';
+            editingPersonId = id;
+            populateSelects(id); // Populate selections, but exclude the current person
+
+            // Set the selected parents and spouse
+            if (person.parent1) {
+                parent1Select.value = person.parent1;
+            }
+            if (person.parent2) {
+                parent2Select.value = person.parent2;
+            }
+            if (person.spouseId) {
+                spouseSelect.value = person.spouseId;
+            }
+
+            personModal.classList.add('open');
+        }
+
+        function closePersonModal() {
+            personModal.classList.remove('open');
+            personForm.reset();
+            editingPersonId = null;
+        }
+
+        function openConfirmModal(id) {
+            deletingPersonId = id;
+            const person = familyMembers[id];
+            if (person) {
+                confirmPersonName.textContent = person.name;
+            } else {
+                confirmPersonName.textContent = 'diese Person';
+            }
+            confirmModal.classList.add('open');
+        }
+
+        function closeConfirmModal() {
+            confirmModal.classList.remove('open');
+            deletingPersonId = null;
+        }
+
+        // Generic modal message function (replaces alert())
+        function showModalMessage(title, message) {
+            messageModalTitle.textContent = title;
+            messageModalText.textContent = message;
+            messageModal.classList.add('open');
+        }
+
+        closeMessageModalBtn.addEventListener('click', () => {
+            messageModal.classList.remove('open');
+        });
+
+        // --- Search Function ---
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value.trim();
+            renderFamilyTree(currentSearchQuery); // Re-render to highlight search results
+        });
+
+        // --- Export Function ---
+        exportDataBtn.addEventListener('click', () => {
+            if (Object.keys(familyMembers).length === 0) {
+                showModalMessage("Export fehlgeschlagen", "Es sind keine Daten zum Exportieren vorhanden.");
+                return;
+            }
+            const dataStr = JSON.stringify(familyMembers, null, 2); // Pretty-print JSON
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `familienbaum_${userId}.json`;
+            document.body.appendChild(a); // Temporarily add to DOM
+            a.click(); // Simulate click
+            document.body.removeChild(a); // Remove element
+            URL.revokeObjectURL(url); // Release URL
+            showModalMessage("Export erfolgreich", "Ihre Familiendaten wurden als JSON-Datei exportiert.");
+        });
+
+        // --- Import Function ---
+        importDataBtn.addEventListener('click', () => {
+            importFileInput.click(); // Trigger file input click
+        });
+
+        importFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (typeof importedData !== 'object' || importedData === null) {
+                        showModalMessage("Import fehlgeschlagen", "Die importierte Datei ist kein gültiges JSON-Objekt.");
+                        return;
+                    }
+
+                    loadingSpinner.classList.add('active');
+                    const familyRef = getFamilyRef();
+                    if (!familyRef) {
+                        loadingSpinner.classList.remove('active');
+                        return;
+                    }
+
+                    // Overwrite existing data with imported data
+                    await set(familyRef, importedData);
+                    showModalMessage("Import erfolgreich", "Ihre Familiendaten wurden erfolgreich importiert.");
+                } catch (error) {
+                    console.error("Error importing data:", error);
+                    showModalMessage("Import fehlgeschlagen", `Error importing data: ${error.message}`);
+                } finally {
+                    loadingSpinner.classList.remove('active');
+                    importFileInput.value = ''; // Clear file input
+                }
+            };
+            reader.readAsText(file);
+        });
+
+
+        // --- Event Listeners ---
+        addPersonBtn.addEventListener('click', openPersonModalForAdd);
+        cancelBtn.addEventListener('click', closePersonModal);
+        cancelDeleteBtn.addEventListener('click', closeConfirmModal);
+
+        personForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+            const birthDate = birthDateInput.value;
+            const gender = genderSelect.value;
+            const parent1 = parent1Select.value || '';
+            const parent2 = parent2Select.value || '';
+            const spouseId = spouseSelect.value || '';
+
+            if (!name || !gender) {
+                showModalMessage("Fehler", "Name und Geschlecht sind Pflichtfelder.");
+                return;
+            }
+
+            // Validation: A person cannot be their own parent or spouse
+            if (editingPersonId) {
+                if (parent1 === editingPersonId || parent2 === editingPersonId || spouseId === editingPersonId) {
+                    showModalMessage("Fehler", "Eine Person kann nicht ihr eigener Elternteil oder Ehepartner sein.");
+                    return;
+                }
+            }
+
+            // Validation: Parent 1 and Parent 2 cannot be the same person
+            if (parent1 && parent2 && parent1 === parent2) {
+                showModalMessage("Fehler", "Elternteil 1 und Elternteil 2 können nicht dieselbe Person sein.");
+                return;
+            }
+
+            const personData = {
+                name,
+                birthDate,
+                gender,
+                parent1,
+                parent2,
+                spouseId
+            };
+            addOrUpdatePerson(personData);
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (deletingPersonId) {
+                deletePerson(deletingPersonId);
+            }
+        });
+
+        // Close modal on click outside content
+        personModal.addEventListener('click', (e) => {
+            if (e.target === personModal) {
+                closePersonModal();
+            }
+        });
+        confirmModal.addEventListener('click', (e) => {
+            if (e.target === confirmModal) {
+                closeConfirmModal();
+            }
+        });
+        messageModal.addEventListener('click', (e) => {
+            if (e.target === messageModal) {
+                messageModal.classList.remove('open');
+            }
+        });
+
+        // Initialize on window load
+        window.onload = initializeFirebase;
+    </script>
+</body>
+</html>
