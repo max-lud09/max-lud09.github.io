@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Familienbaum</title>
+    <title>Dynamischer Familienbaum</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for Icons -->
@@ -83,7 +83,7 @@
         }
 
         /* Formular-Input-Styles */
-        input[type="text"], input[type="date"], input[type="email"], input[type="password"], select {
+        input[type="text"], input[type="date"], input[type="email"], input[type="password"], select, textarea {
             padding: 0.75rem;
             border-radius: 0.5rem; /* rounded-lg */
             border: 1px solid #cbd5e1; /* slate-300 */
@@ -93,7 +93,7 @@
             transition: all 0.2s ease-in-out;
         }
 
-        input[type="text"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus {
+        input[type="text"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #4f46e5; /* indigo-600 */
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* ring-indigo-200 */
@@ -130,6 +130,8 @@
             width: 90%;
             transform: translateY(-20px);
             transition: transform 0.3s ease-in-out;
+            max-height: 90vh; /* Begrenzt die Höhe des Modals */
+            overflow-y: auto; /* Ermöglicht Scrollen im Modal */
         }
 
         .modal.open .modal-content {
@@ -272,6 +274,7 @@
                 <i class="fas fa-sign-in-alt"></i> Anmelden
             </button>
         </form>
+        <!-- Die Registrierungsfunktion wurde entfernt, um nur die Anmeldung zu ermöglichen. -->
     </div>
 
     <div id="app-section" class="container hidden">
@@ -317,13 +320,14 @@
         <div class="modal-content">
             <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-6">Person hinzufügen</h3>
             <form id="person-form" class="space-y-5">
+                <!-- Basisinformationen -->
                 <div>
                     <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Name:</label>
                     <input type="text" id="name" placeholder="Vollständiger Name" required>
                 </div>
                 <div>
-                    <label for="birthDate" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsdatum:</label>
-                    <input type="date" id="birthDate">
+                    <label for="maidenName" class="block text-gray-700 text-sm font-semibold mb-2">Mädchenname (optional):</label>
+                    <input type="text" id="maidenName" placeholder="Mädchenname">
                 </div>
                 <div>
                     <label for="gender" class="block text-gray-700 text-sm font-semibold mb-2">Geschlecht:</label>
@@ -334,6 +338,26 @@
                         <option value="other">Andere</option>
                     </select>
                 </div>
+
+                <!-- Lebensdaten -->
+                <div>
+                    <label for="birthDate" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsdatum:</label>
+                    <input type="date" id="birthDate">
+                </div>
+                <div>
+                    <label for="placeOfBirth" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsort:</label>
+                    <input type="text" id="placeOfBirth" placeholder="Geburtsort">
+                </div>
+                <div>
+                    <label for="dateOfDeath" class="block text-gray-700 text-sm font-semibold mb-2">Sterbedatum (optional):</label>
+                    <input type="date" id="dateOfDeath">
+                </div>
+                <div>
+                    <label for="placeOfDeath" class="block text-gray-700 text-sm font-semibold mb-2">Sterbeort (optional):</label>
+                    <input type="text" id="placeOfDeath" placeholder="Sterbeort">
+                </div>
+
+                <!-- Beziehungen -->
                 <div>
                     <label for="parent1" class="block text-gray-700 text-sm font-semibold mb-2">Elternteil 1 (optional):</label>
                     <select id="parent1">
@@ -352,6 +376,33 @@
                         <option value="">Kein Ehepartner</option>
                     </select>
                 </div>
+
+                <!-- Zusätzliche Informationen -->
+                <div>
+                    <label for="occupation" class="block text-gray-700 text-sm font-semibold mb-2">Beruf (optional):</label>
+                    <input type="text" id="occupation" placeholder="Beruf">
+                </div>
+                <div>
+                    <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">E-Mail (optional):</label>
+                    <input type="email" id="email" placeholder="E-Mail-Adresse">
+                </div>
+                <div>
+                    <label for="phone" class="block text-gray-700 text-sm font-semibold mb-2">Telefon (optional):</label>
+                    <input type="text" id="phone" placeholder="Telefonnummer">
+                </div>
+                <div>
+                    <label for="address" class="block text-gray-700 text-sm font-semibold mb-2">Adresse (optional):</label>
+                    <input type="text" id="address" placeholder="Straße, Hausnummer, Stadt, PLZ">
+                </div>
+                <div>
+                    <label for="profileImageUrl" class="block text-gray-700 text-sm font-semibold mb-2">Profilbild URL (optional):</label>
+                    <input type="text" id="profileImageUrl" placeholder="URL zum Profilbild">
+                </div>
+                <div>
+                    <label for="notes" class="block text-gray-700 text-sm font-semibold mb-2">Notizen (optional):</label>
+                    <textarea id="notes" rows="3" placeholder="Zusätzliche Notizen zur Person..."></textarea>
+                </div>
+
                 <div class="flex justify-end gap-4 mt-8">
                     <button type="button" id="cancel-btn" class="btn btn-secondary">Abbrechen</button>
                     <button type="submit" id="save-person-btn" class="btn btn-primary">Speichern</button>
@@ -392,34 +443,33 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // Global variables for Firebase config and app ID
-        // IMPORTANT: Replace the placeholder below with your actual Firebase project configuration.
-        // You can find this in your Firebase project settings -> Project settings -> General -> Your apps -> Firebase SDK snippet (Config).
+        // Globale Variablen für Firebase-Konfiguration und App-ID
+        // WICHTIG: Ersetzen Sie den Platzhalter unten durch Ihre tatsächliche Firebase-Projektkonfiguration.
+        // Sie finden diese in Ihren Firebase-Projekteinstellungen -> Projekteinstellungen -> Allgemein -> Ihre Apps -> Firebase SDK-Snippet (Config).
         const firebaseConfigPlaceholder = {
-          apiKey: "AIzaSyAgMUEnYEaAcbmwvmrHVBMr7dlL52CciRk",
-          authDomain: "stamm-baum-ludwig.firebaseapp.com",
-          databaseURL: "https://stamm-baum-ludwig-default-rtdb.europe-west1.firebasedatabase.app",
-          projectId: "stamm-baum-ludwig",
-          storageBucket: "stamm-baum-ludwig.firebasestorage.app",
-          messagingSenderId: "898486161819",
-          appId: "1:898486161819:web:28e7c9775f9406412f913e"
+            apiKey: "AIzaSyAgMUEnYEaAcbmwvmrHVBMr7dlL52CciRk",
+  authDomain: "stamm-baum-ludwig.firebaseapp.com",
+  databaseURL: "https://stamm-baum-ludwig-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "stamm-baum-ludwig",
+  storageBucket: "stamm-baum-ludwig.firebasestorage.app",
+  messagingSenderId: "898486161819",
+  appId: "1:898486161819:web:28e7c9775f9406412f913e"
         };
-      
 
-        // Use the placeholder config for production.
-        // In the Canvas environment, __app_id and __firebase_config are automatically provided.
-        // For GitHub deployment, you will use firebaseConfigPlaceholder.
-        const appId = firebaseConfigPlaceholder.appId; // Use the app ID from your config
+        // Verwenden Sie die Platzhalterkonfiguration für die Produktion.
+        // In der Canvas-Umgebung werden __app_id und __firebase_config automatisch bereitgestellt.
+        // Für die GitHub-Bereitstellung verwenden Sie firebaseConfigPlaceholder.
+        const appId = firebaseConfigPlaceholder.appId; // Verwenden Sie die App-ID aus Ihrer Konfiguration
         const firebaseConfig = firebaseConfigPlaceholder;
 
         let app;
         let auth;
         let db;
         let userId = null;
-        let familyMembers = {}; // Stores all family members as an object {id: personData}
-        let currentSearchQuery = ''; // Stores the current search query
+        let familyMembers = {}; // Speichert alle Familienmitglieder als Objekt {id: personData}
+        let currentSearchQuery = ''; // Speichert die aktuelle Suchanfrage
 
-        // DOM Elements
+        // DOM-Elemente
         const authSection = document.getElementById('auth-section');
         const appSection = document.getElementById('app-section');
         const loginForm = document.getElementById('login-form');
@@ -436,11 +486,21 @@
         const modalTitle = document.getElementById('modal-title');
         const personForm = document.getElementById('person-form');
         const nameInput = document.getElementById('name');
+        const maidenNameInput = document.getElementById('maidenName'); // Neu
         const birthDateInput = document.getElementById('birthDate');
+        const placeOfBirthInput = document.getElementById('placeOfBirth'); // Neu
+        const dateOfDeathInput = document.getElementById('dateOfDeath');   // Neu
+        const placeOfDeathInput = document.getElementById('placeOfDeath'); // Neu
         const genderSelect = document.getElementById('gender');
         const parent1Select = document.getElementById('parent1');
         const parent2Select = document.getElementById('parent2');
         const spouseSelect = document.getElementById('spouse');
+        const occupationInput = document.getElementById('occupation');     // Neu
+        const emailInput = document.getElementById('email');               // Neu
+        const phoneInput = document.getElementById('phone');               // Neu
+        const addressInput = document.getElementById('address');           // Neu
+        const profileImageUrlInput = document.getElementById('profileImageUrl'); // Neu
+        const notesInput = document.getElementById('notes');               // Neu
         const cancelBtn = document.getElementById('cancel-btn');
         const savePersonBtn = document.getElementById('save-person-btn');
         const confirmPersonName = document.getElementById('confirm-person-name');
@@ -456,55 +516,55 @@
         const closeMessageModalBtn = document.getElementById('close-message-modal');
         const tooltip = d3.select("#tooltip"); // D3.js Tooltip Element
 
-        let editingPersonId = null; // Stores the ID of the person currently being edited
-        let deletingPersonId = null; // Stores the ID of the person to be deleted
+        let editingPersonId = null; // Speichert die ID der Person, die gerade bearbeitet wird
+        let deletingPersonId = null; // Speichert die ID der Person, die gelöscht werden soll
 
-        // D3.js Configuration
+        // D3.js Konfiguration
         const margin = { top: 60, right: 90, bottom: 60, left: 90 };
         let width = 0;
         let height = 0;
-        const nodeRadius = 30; // Radius of the circle for each node
-        const textOffset = 45; // Distance of the text from the circle
+        const nodeRadius = 40; // Radius des Kreises für jeden Knoten (etwas größer für mehr Platz)
+        const textOffset = 50; // Abstand des Textes vom Kreis
 
-        let svg; // The SVG element for the tree
-        let g;   // Group for the tree (for transformations)
-        let treeLayout; // D3 tree layout
+        let svg; // Das SVG-Element für den Baum
+        let g;   // Gruppe für den Baum (für Transformationen)
+        let treeLayout; // D3 Baum-Layout
 
-        // --- Firebase Initialization and Authentication ---
+        // --- Firebase Initialisierung und Authentifizierung ---
         async function initializeFirebase() {
             try {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getDatabase(app);
 
-                // Listener for authentication status changes
+                // Listener für Authentifizierungsstatusänderungen
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         currentUserIdSpan.textContent = userId;
                         authSection.classList.add('hidden');
                         appSection.classList.remove('hidden');
-                        console.log("User logged in:", userId);
-                        // Fetch data once the user is logged in
+                        console.log("Benutzer angemeldet:", userId);
+                        // Daten abrufen, sobald der Benutzer angemeldet ist
                         listenForFamilyData();
                     } else {
                         userId = null;
                         currentUserIdSpan.textContent = '';
                         authSection.classList.remove('hidden');
                         appSection.classList.add('hidden');
-                        familyMembers = {}; // Clear tree data
-                        renderFamilyTree(); // Re-render tree (empty)
-                        console.log("User logged out.");
+                        familyMembers = {}; // Baumdaten leeren
+                        renderFamilyTree(); // Baum neu rendern (leer)
+                        console.log("Benutzer abgemeldet.");
                     }
                 });
 
             } catch (error) {
-                console.error("Error during Firebase initialization:", error);
-                showModalMessage("Error", `There was a problem loading the application: ${error.message}`);
+                console.error("Fehler bei der Firebase-Initialisierung:", error);
+                showModalMessage("Fehler", `Es gab ein Problem beim Laden der Anwendung: ${error.message}`);
             }
         }
 
-        // --- Login Function ---
+        // --- Anmeldefunktion ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginEmailInput.value;
@@ -512,10 +572,10 @@
             loadingSpinner.classList.add('active');
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                showModalMessage("Success", "Successfully logged in!");
+                showModalMessage("Erfolg", "Erfolgreich angemeldet!");
             } catch (error) {
-                console.error("Login failed:", error);
-                showModalMessage("Login Error", `Login failed: ${error.message}`);
+                console.error("Anmeldung fehlgeschlagen:", error);
+                showModalMessage("Anmeldefehler", `Anmeldung fehlgeschlagen: ${error.message}`);
             } finally {
                 loadingSpinner.classList.remove('active');
             }
@@ -525,23 +585,22 @@
             loadingSpinner.classList.add('active');
             try {
                 await signOut(auth);
-                showModalMessage("Logout", "You have been successfully logged out.");
+                showModalMessage("Abmeldung", "Sie wurden erfolgreich abgemeldet.");
             } catch (error) {
-                console.error("Logout failed:", error);
-                showModalMessage("Logout Error", `Logout failed: ${error.message}`);
+                console.error("Abmeldung fehlgeschlagen:", error);
+                showModalMessage("Abmeldefehler", `Abmeldung fehlgeschlagen: ${error.message}`);
             } finally {
                 loadingSpinner.classList.remove('active');
             }
         });
 
-        // --- Firebase Realtime Database Operations ---
+        // --- Firebase Realtime Database Operationen ---
         function getFamilyRef() {
             if (!userId) {
-                console.error("No user ID available. Cannot access the database.");
+                console.error("Keine Benutzer-ID verfügbar. Kann nicht auf die Datenbank zugreifen.");
                 return null;
             }
-            // Path: /artifacts/{appId}/users/{userId}/familyTree
-            // This is the path where data for the logged-in user will be stored.
+            // Pfad: /artifacts/{appId}/users/{userId}/familyTree
             return ref(db, `artifacts/${appId}/users/${userId}/familyTree`);
         }
 
@@ -550,12 +609,10 @@
             if (!familyRef) return;
 
             loadingSpinner.classList.add('active');
-            // onValue listens for real-time changes and updates the UI
             onValue(familyRef, (snapshot) => {
-                familyMembers = {}; // Clear before updating
+                familyMembers = {}; // Vor dem Aktualisieren leeren
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    // Load data into the familyMembers object, using keys as IDs
                     Object.keys(data).forEach(key => {
                         familyMembers[key] = { id: key, ...data[key] };
                     });
@@ -563,11 +620,11 @@
                 } else {
                     noDataMessage.classList.remove('hidden');
                 }
-                renderFamilyTree(currentSearchQuery); // Re-render tree with current search filter
+                renderFamilyTree(currentSearchQuery); // Baum mit aktuellem Suchfilter neu rendern
                 loadingSpinner.classList.remove('active');
             }, (error) => {
-                console.error("Error fetching family data:", error);
-                showModalMessage("Data Error", `Error loading family data: ${error.message}`);
+                console.error("Fehler beim Abrufen der Familiendaten:", error);
+                showModalMessage("Datenfehler", `Fehler beim Laden der Familiendaten: ${error.message}`);
                 loadingSpinner.classList.remove('active');
             });
         }
@@ -581,35 +638,29 @@
                 const oldSpouseId = editingPersonId ? familyMembers[editingPersonId]?.spouseId : null;
 
                 if (editingPersonId) {
-                    // Edit person: update data
                     await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${editingPersonId}`), personData);
 
-                    // Handle spouse relationship updates
-                    // If old spouse exists and has changed, unpair old spouse
                     if (oldSpouseId && oldSpouseId !== personData.spouseId) {
                         await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${oldSpouseId}`), { spouseId: '' });
                     }
-                    // If new spouse is set and is not the current person, pair new spouse
                     if (personData.spouseId && personData.spouseId !== editingPersonId) {
                         await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: editingPersonId });
                     }
 
-                    console.log("Person successfully updated:", editingPersonId);
+                    console.log("Person erfolgreich aktualisiert:", editingPersonId);
                 } else {
-                    // Add new person: generate new key and set data
                     const newPersonRef = push(familyRef);
                     await set(newPersonRef, personData);
 
-                    // If a spouse was set, also update the spouse's spouseId
                     if (personData.spouseId) {
                         await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: newPersonRef.key });
                     }
-                    console.log("New person successfully added:", newPersonRef.key);
+                    console.log("Neue Person erfolgreich hinzugefügt:", newPersonRef.key);
                 }
                 closePersonModal();
             } catch (error) {
-                console.error("Error saving person:", error);
-                showModalMessage("Save Error", `Error saving person: ${error.message}`);
+                console.error("Fehler beim Speichern der Person:", error);
+                showModalMessage("Speicherfehler", `Fehler beim Speichern der Person: ${error.message}`);
             } finally {
                 loadingSpinner.classList.remove('active');
             }
@@ -623,7 +674,6 @@
             try {
                 const personToDelete = familyMembers[personId];
 
-                // Remove all references to this person as parent or spouse
                 const updates = {};
                 Object.values(familyMembers).forEach(member => {
                     if (member.parent1 === personId) {
@@ -637,7 +687,6 @@
                     }
                 });
 
-                // Also unpair the spouse, if any
                 if (personToDelete && personToDelete.spouseId) {
                     updates[`${personToDelete.spouseId}/spouseId`] = '';
                 }
@@ -646,21 +695,20 @@
                     await update(familyRef, updates);
                 }
 
-                // Then delete the person itself
                 await remove(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personId}`));
-                console.log("Person successfully deleted:", personId);
+                console.log("Person erfolgreich gelöscht:", personId);
                 closeConfirmModal();
             } catch (error) {
-                console.error("Error deleting person:", error);
-                showModalMessage("Delete Error", `Error deleting person: ${error.message}`);
+                console.error("Fehler beim Löschen der Person:", error);
+                showModalMessage("Löschfehler", `Fehler beim Löschen der Person: ${error.message}`);
             } finally {
                 loadingSpinner.classList.remove('active');
             }
         }
 
-        // --- D3.js Visualization ---
+        // --- D3.js Visualisierung ---
         function renderFamilyTree(searchQuery = '') {
-            familyTreeDisplay.innerHTML = ''; // Clear before redrawing
+            familyTreeDisplay.innerHTML = ''; // Vor dem Neuzeichnen leeren
             const membersArray = Object.values(familyMembers);
 
             if (membersArray.length === 0) {
@@ -670,37 +718,28 @@
                 noDataMessage.classList.add('hidden');
             }
 
-            // Person IDs for highlighting based on search
             const highlightedPersonIds = new Set(membersArray
                 .filter(person => person.name.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map(person => person.id));
 
-            // Build hierarchical data structure for D3.js
-            // Find all potential root nodes (persons with no parents)
             const rootCandidates = membersArray.filter(p => !p.parent1 && !p.parent2);
 
             let treeData;
             if (rootCandidates.length === 0 && membersArray.length > 0) {
-                // If no one without parents is found, take the first person as a fallback root
-                // This might lead to a disconnected tree representation if there are multiple independent lines.
-                // An artificial root is created to connect all persons.
-                treeData = { id: "artificial-root", name: "Family Tree", children: membersArray.map(p => buildTreeData(p.id)) };
+                treeData = { id: "artificial-root", name: "Familienbaum", children: membersArray.map(p => buildTreeData(p.id)) };
             } else if (rootCandidates.length === 1) {
                 treeData = buildTreeData(rootCandidates[0].id);
             } else if (rootCandidates.length > 1) {
-                // If multiple roots exist, create an artificial super-root
                 treeData = {
                     id: "super-root",
-                    name: "Entire Family Tree",
+                    name: "Gesamter Familienbaum",
                     children: rootCandidates.map(p => buildTreeData(p.id))
                 };
             } else {
-                // No data available
                 noDataMessage.classList.remove('hidden');
                 return;
             }
 
-            // Recursive function to build the D3 hierarchy data
             function buildTreeData(personId) {
                 const person = familyMembers[personId];
                 if (!person) return null;
@@ -709,29 +748,37 @@
                 return {
                     id: person.id,
                     name: person.name,
+                    maidenName: person.maidenName, // Neu
                     birthDate: person.birthDate,
+                    placeOfBirth: person.placeOfBirth, // Neu
+                    dateOfDeath: person.dateOfDeath,     // Neu
+                    placeOfDeath: person.placeOfDeath,   // Neu
                     gender: person.gender,
                     spouseId: person.spouseId,
-                    _children: null, // For collapse/expand
-                    children: children.map(c => buildTreeData(c.id)).filter(Boolean) // Recursive call
+                    occupation: person.occupation,       // Neu
+                    email: person.email,                 // Neu
+                    phone: person.phone,                 // Neu
+                    address: person.address,             // Neu
+                    profileImageUrl: person.profileImageUrl, // Neu
+                    notes: person.notes,                 // Neu
+                    _children: null,
+                    children: children.map(c => buildTreeData(c.id)).filter(Boolean)
                 };
             }
 
-            // Set SVG dimensions dynamically
             const containerWidth = familyTreeDisplay.clientWidth;
-            // Estimated height based on number of nodes and depth
             const estimatedDepth = d3.max(Object.values(familyMembers), d => {
                 let depth = 0;
                 let current = d;
                 while (current && (current.parent1 || current.parent2)) {
                     depth++;
-                    current = familyMembers[current.parent1 || current.parent2]; // Follow one parent path
+                    current = familyMembers[current.parent1 || current.parent2];
                 }
                 return depth;
             });
-            height = Math.max(400, (estimatedDepth + 1) * 100); // Node spacing + margin
+            height = Math.max(400, (estimatedDepth + 1) * 120); // Angepasster Knotenabstand
             width = containerWidth - margin.left - margin.right;
-            if (width < 300) width = 300; // Minimum width
+            if (width < 300) width = 300;
 
             svg = d3.select("#family-tree-display").append("svg")
                 .attr("width", containerWidth)
@@ -740,40 +787,34 @@
                 .attr("preserveAspectRatio", "xMidYMid meet");
 
             g = svg.append("g")
-                .attr("transform", `translate(${margin.left + width / 2},${margin.top})`); // Center the tree
+                .attr("transform", `translate(${margin.left + width / 2},${margin.top})`);
 
             treeLayout = d3.tree().size([width, height]);
 
             const root = d3.hierarchy(treeData);
 
-            // Function to update the tree (used for initial render and collapse/expand)
             function updateTree(source) {
                 const treeNodes = treeLayout(root);
-                const nodes = treeNodes.descendants().filter(d => d.data.id !== "super-root" && d.data.id !== "artificial-root"); // Filter artificial roots
+                const nodes = treeNodes.descendants().filter(d => d.data.id !== "super-root" && d.data.id !== "artificial-root");
                 const links = treeNodes.links();
 
-                // Normalize for fixed-depth.
-                nodes.forEach(d => { d.y = d.depth * 100; }); // Adjust vertical spacing
+                nodes.forEach(d => { d.y = d.depth * 120; }); // Angepasster vertikaler Abstand
 
-                // Update the links
                 const link = g.selectAll(".link")
                     .data(links, d => d.target.id);
 
-                // Enter any new links at the parent's previous position.
                 const linkEnter = link.enter().append("path", "g")
                     .attr("class", "link")
                     .attr("d", d3.linkVertical()
                         .x(source.x0 || source.x)
                         .y(source.y0 || source.y));
 
-                // Transition links to their new position.
                 link.merge(linkEnter).transition()
                     .duration(500)
                     .attr("d", d3.linkVertical()
                         .x(d => d.x)
                         .y(d => d.y));
 
-                // Transition exiting links to the parent's new position.
                 link.exit().transition()
                     .duration(500)
                     .attr("d", d3.linkVertical()
@@ -781,54 +822,70 @@
                         .y(d => source.y))
                     .remove();
 
-                // Update the nodes
                 const node = g.selectAll(".node")
                     .data(nodes, d => d.id);
 
-                // Enter any new nodes at the parent's previous position.
                 const nodeEnter = node.enter().append("g")
                     .attr("class", d => `node ${d.children ? "node--internal" : "node--leaf"} ${highlightedPersonIds.has(d.data.id) ? 'highlighted' : ''}`)
-                    .attr("transform", d => `translate(${source.x0 || source.x},${source.y0 || source.y})`)
-                    .on("click", (event, d) => toggleNode(event, d)); // Collapse/expand on node click
+                    .attr("transform", d => `translate(${source.x0 || source.x},${source.y0 || source.y})`);
 
                 nodeEnter.append("circle")
-                    .attr("r", nodeRadius);
+                    .attr("r", nodeRadius)
+                    .on("click", (event, d) => {
+                        // Verhindert das Ein-/Ausklappen bei Klick auf den Kreis, wenn Buttons vorhanden sind
+                        // Stattdessen wird nur der Tooltip angezeigt oder das Modal geöffnet, wenn kein Button geklickt wird.
+                    });
 
                 nodeEnter.append("text")
-                    .attr("dy", textOffset) // Below the circle
+                    .attr("dy", textOffset - 15) // Name etwas höher positionieren
                     .text(d => d.data.name);
 
-                // Add foreignObject for buttons and info
+                // ForeignObject für Buttons und Info
                 nodeEnter.append("foreignObject")
                     .attr("x", -nodeRadius)
-                    .attr("y", nodeRadius + 10)
+                    .attr("y", nodeRadius + 5) // Unterhalb des Namens
                     .attr("width", nodeRadius * 2)
-                    .attr("height", 40)
+                    .attr("height", 60) // Mehr Platz für Buttons
                     .html(d => `
-                        <div class="flex justify-center gap-1 text-xs">
-                            ${(d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? `<button class="toggle-btn text-white bg-slate-500 hover:bg-slate-600 rounded-md px-2 py-1" title="${d._children ? 'Expand' : 'Collapse'}">
-                                <i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i>
+                        <div class="flex flex-col items-center justify-center gap-1 text-xs">
+                            <div class="flex gap-1">
+                                <button class="edit-btn text-white bg-indigo-400 hover:bg-indigo-500 rounded-md px-2 py-1" data-id="${d.data.id}" title="Bearbeiten">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-btn text-white bg-red-500 hover:bg-red-600 rounded-md px-2 py-1" data-id="${d.data.id}" title="Löschen">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            ${(d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? `<button class="toggle-btn text-white bg-slate-500 hover:bg-slate-600 rounded-md px-2 py-1 mt-1" title="${d._children ? 'Erweitern' : 'Einklappen'}">
+                                <i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i> ${d._children ? 'Erweitern' : 'Einklappen'}
                             </button>` : ''}
-                            <button class="edit-btn text-white bg-indigo-400 hover:bg-indigo-500 rounded-md px-2 py-1" data-id="${d.data.id}" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete-btn text-white bg-red-500 hover:bg-red-600 rounded-md px-2 py-1" data-id="${d.data.id}" title="Delete">
-                                <i class="fas fa-trash-alt"></i>
+                            <button class="add-child-btn text-white bg-green-500 hover:bg-green-600 rounded-md px-2 py-1 mt-1" data-id="${d.data.id}" title="Kind hinzufügen">
+                                <i class="fas fa-child"></i> Kind hinzufügen
                             </button>
                         </div>
                     `);
 
-                // Add tooltips
+                // Tooltips hinzufügen
                 nodeEnter.on("mouseover", function(event, d) {
                     tooltip.style("opacity", 1)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 28) + "px")
                         .html(`
                             <p><strong>Name:</strong> ${d.data.name}</p>
-                            <p><strong>Geburtsdatum:</strong> ${formatDate(d.data.birthDate)}</p>
+                            ${d.data.maidenName ? `<p><strong>Mädchenname:</strong> ${d.data.maidenName}</p>` : ''}
                             <p><strong>Geschlecht:</strong> ${getGenderDisplay(d.data.gender)}</p>
-                            ${d.data.spouseId ? `<p><strong>Ehepartner:</strong> ${familyMembers[d.data.spouseId]?.name || 'Unknown'}</p>` : ''}
+                            ${d.data.birthDate ? `<p><strong>Geburtsdatum:</strong> ${formatDate(d.data.birthDate)}</p>` : ''}
+                            ${d.data.placeOfBirth ? `<p><strong>Geburtsort:</strong> ${d.data.placeOfBirth}</p>` : ''}
+                            ${d.data.dateOfDeath ? `<p><strong>Sterbedatum:</strong> ${formatDate(d.data.dateOfDeath)}</p>` : ''}
+                            ${d.data.placeOfDeath ? `<p><strong>Sterbeort:</strong> ${d.data.placeOfDeath}</p>` : ''}
+                            ${d.data.spouseId ? `<p><strong>Ehepartner:</strong> ${familyMembers[d.data.spouseId]?.name || 'Unbekannt'}</p>` : ''}
                             ${(d.data.parent1 || d.data.parent2) ? `<p><strong>Eltern:</strong> ${familyMembers[d.data.parent1]?.name || 'N/A'} & ${familyMembers[d.data.parent2]?.name || 'N/A'}</p>` : ''}
+                            ${d.data.occupation ? `<p><strong>Beruf:</strong> ${d.data.occupation}</p>` : ''}
+                            ${d.data.email ? `<p><strong>E-Mail:</strong> ${d.data.email}</p>` : ''}
+                            ${d.data.phone ? `<p><strong>Telefon:</strong> ${d.data.phone}</p>` : ''}
+                            ${d.data.address ? `<p><strong>Adresse:</strong> ${d.data.address}</p>` : ''}
+                            ${d.data.notes ? `<p><strong>Notizen:</strong> ${d.data.notes}</p>` : ''}
+                            ${d.data.profileImageUrl ? `<p><strong>Profilbild:</strong> <img src="${d.data.profileImageUrl}" alt="Profilbild" style="width:50px;height:50px;border-radius:50%;object-fit:cover;margin-top:5px;"></p>` : ''}
                         `);
                 })
                 .on("mouseout", function() {
@@ -836,26 +893,23 @@
                 });
 
 
-                // Transition nodes to their new position.
                 const nodeUpdate = node.merge(nodeEnter).transition()
                     .duration(500)
                     .attr("transform", d => `translate(${d.x},${d.y})`);
 
                 nodeUpdate.select("circle")
                     .attr("r", nodeRadius)
-                    .attr("class", d => highlightedPersonIds.has(d.data.id) ? 'highlighted' : ''); // Update highlight class
+                    .attr("class", d => highlightedPersonIds.has(d.data.id) ? 'highlighted' : '');
 
                 nodeUpdate.select("text")
                     .text(d => d.data.name);
 
-                // Update buttons in foreignObject (e.g., toggle icon)
                 nodeUpdate.select("foreignObject").select(".toggle-btn")
-                    .html(d => `<i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i>`)
-                    .attr("title", d => d._children ? 'Expand' : 'Collapse')
+                    .html(d => `<i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i> ${d._children ? 'Erweitern' : 'Einklappen'}`)
+                    .attr("title", d => d._children ? 'Erweitern' : 'Einklappen')
                     .style("display", d => (d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? 'inline-flex' : 'none');
 
 
-                // Transition exiting nodes to the parent's new position.
                 const nodeExit = node.exit().transition()
                     .duration(500)
                     .attr("transform", d => `translate(${source.x},${source.y})`)
@@ -867,37 +921,38 @@
                 nodeExit.select("text")
                     .style("fill-opacity", 0);
 
-                // Store the old positions for transition.
                 nodes.forEach(d => {
                     d.x0 = d.x;
                     d.y0 = d.y;
                 });
 
-                // Re-attach event listeners for buttons within foreignObject after D3 update
                 svg.selectAll(".edit-btn").on("click", function(event) {
-                    event.stopPropagation(); // Prevents the click from also triggering the circle
+                    event.stopPropagation();
                     const id = d3.select(this).attr("data-id");
                     openPersonModalForEdit(id);
                 });
 
                 svg.selectAll(".delete-btn").on("click", function(event) {
-                    event.stopPropagation(); // Prevents the click from also triggering the circle
+                    event.stopPropagation();
                     const id = d3.select(this).attr("data-id");
                     openConfirmModal(id);
                 });
 
                 svg.selectAll(".toggle-btn").on("click", function(event, d) {
-                    event.stopPropagation(); // Prevents the click from also triggering the node
+                    event.stopPropagation();
                     toggleNode(event, d);
                 });
 
-                // Draw spouse links
+                svg.selectAll(".add-child-btn").on("click", function(event) {
+                    event.stopPropagation();
+                    const parentId = d3.select(this).attr("data-id");
+                    openPersonModalForAddWithParent(parentId);
+                });
+
                 drawSpouseLinks(nodes);
             }
 
-            // Toggle children on click.
             function toggleNode(event, d) {
-                // Do not collapse artificial roots
                 if (d.data.id === "super-root" || d.data.id === "artificial-root") return;
 
                 if (d.children) {
@@ -910,22 +965,18 @@
                 updateTree(d);
             }
 
-            // Function to draw spouse links
             function drawSpouseLinks(nodes) {
-                // Remove existing spouse links
                 g.selectAll(".spouse-link").remove();
 
                 const spouseLinks = [];
-                const nodeMap = new Map(nodes.map(d => [d.data.id, d])); // Map node ID to D3 node object
+                const nodeMap = new Map(nodes.map(d => [d.data.id, d]));
 
-                // Iterate through persons and find their spouses
                 Object.values(familyMembers).forEach(person => {
                     if (person.spouseId && nodeMap.has(person.id) && nodeMap.has(person.spouseId)) {
                         const personNode = nodeMap.get(person.id);
                         const spouseNode = nodeMap.get(person.spouseId);
 
-                        // Ensure each pair is only added once (e.g., A-B, not B-A)
-                        if (person.id < person.spouseId) { // Arbitrary order to avoid duplicates
+                        if (person.id < person.spouseId) {
                             spouseLinks.push({
                                 source: personNode,
                                 target: spouseNode
@@ -939,15 +990,13 @@
                     .enter().append("line")
                     .attr("class", "spouse-link")
                     .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y - nodeRadius) // Slightly above the node
+                    .attr("y1", d => d.source.y - nodeRadius)
                     .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y - nodeRadius); // Slightly above the node
+                    .attr("y2", d => d.target.y - nodeRadius);
             }
 
-            // Initial call to update the tree
             updateTree(root);
 
-            // Optional: Pan and Zoom functionality
             const zoom = d3.zoom()
                 .scaleExtent([0.1, 4])
                 .on("zoom", (event) => {
@@ -956,14 +1005,13 @@
             svg.call(zoom);
         }
 
-        // Helper function to format date
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             try {
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
                 return new Date(dateString).toLocaleDateString('de-DE', options);
             } catch (e) {
-                return dateString; // Fallback if date is invalid
+                return dateString;
             }
         }
 
@@ -982,7 +1030,6 @@
             spouseSelect.innerHTML = '<option value="">Kein Ehepartner</option>';
 
             Object.values(familyMembers).forEach(person => {
-                // Prevent a person from being their own parent or spouse
                 if (person.id !== currentPersonId) {
                     const option1 = document.createElement('option');
                     option1.value = person.id;
@@ -1002,14 +1049,25 @@
             });
         }
 
-        // --- Modal Functions ---
+        // --- Modal-Funktionen ---
         function openPersonModalForAdd() {
             modalTitle.textContent = 'Person hinzufügen';
             personForm.reset();
             editingPersonId = null;
-            populateSelects(); // Empty selections for new person
+            populateSelects();
             personModal.classList.add('open');
         }
+
+        // Neue Funktion: Person hinzufügen mit vorausgewähltem Elternteil
+        function openPersonModalForAddWithParent(parentId) {
+            openPersonModalForAdd(); // Öffnet das normale Hinzufügen-Modal
+            // Setzt den ersten Elternteil auf die übergebene ID
+            if (familyMembers[parentId]) {
+                parent1Select.value = parentId;
+            }
+            modalTitle.textContent = 'Kind hinzufügen'; // Angepasster Titel
+        }
+
 
         function openPersonModalForEdit(id) {
             const person = familyMembers[id];
@@ -1019,12 +1077,22 @@
             }
             modalTitle.textContent = 'Person bearbeiten';
             nameInput.value = person.name;
+            maidenNameInput.value = person.maidenName || ''; // Neu
             birthDateInput.value = person.birthDate || '';
+            placeOfBirthInput.value = person.placeOfBirth || ''; // Neu
+            dateOfDeathInput.value = person.dateOfDeath || '';     // Neu
+            placeOfDeathInput.value = person.placeOfDeath || '';   // Neu
             genderSelect.value = person.gender || '';
-            editingPersonId = id;
-            populateSelects(id); // Populate selections, but exclude the current person
+            occupationInput.value = person.occupation || '';       // Neu
+            emailInput.value = person.email || '';                 // Neu
+            phoneInput.value = person.phone || '';                 // Neu
+            addressInput.value = person.address || '';             // Neu
+            profileImageUrlInput.value = person.profileImageUrl || ''; // Neu
+            notesInput.value = person.notes || '';                 // Neu
 
-            // Set the selected parents and spouse
+            editingPersonId = id;
+            populateSelects(id);
+
             if (person.parent1) {
                 parent1Select.value = person.parent1;
             }
@@ -1060,7 +1128,6 @@
             deletingPersonId = null;
         }
 
-        // Generic modal message function (replaces alert())
         function showModalMessage(title, message) {
             messageModalTitle.textContent = title;
             messageModalText.textContent = message;
@@ -1071,34 +1138,34 @@
             messageModal.classList.remove('open');
         });
 
-        // --- Search Function ---
+        // --- Suchfunktion ---
         searchInput.addEventListener('input', (e) => {
             currentSearchQuery = e.target.value.trim();
-            renderFamilyTree(currentSearchQuery); // Re-render to highlight search results
+            renderFamilyTree(currentSearchQuery);
         });
 
-        // --- Export Function ---
+        // --- Exportfunktion ---
         exportDataBtn.addEventListener('click', () => {
             if (Object.keys(familyMembers).length === 0) {
                 showModalMessage("Export fehlgeschlagen", "Es sind keine Daten zum Exportieren vorhanden.");
                 return;
             }
-            const dataStr = JSON.stringify(familyMembers, null, 2); // Pretty-print JSON
+            const dataStr = JSON.stringify(familyMembers, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `familienbaum_${userId}.json`;
-            document.body.appendChild(a); // Temporarily add to DOM
-            a.click(); // Simulate click
-            document.body.removeChild(a); // Remove element
-            URL.revokeObjectURL(url); // Release URL
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             showModalMessage("Export erfolgreich", "Ihre Familiendaten wurden als JSON-Datei exportiert.");
         });
 
-        // --- Import Function ---
+        // --- Importfunktion ---
         importDataBtn.addEventListener('click', () => {
-            importFileInput.click(); // Trigger file input click
+            importFileInput.click();
         });
 
         importFileInput.addEventListener('change', (event) => {
@@ -1123,22 +1190,21 @@
                         return;
                     }
 
-                    // Overwrite existing data with imported data
                     await set(familyRef, importedData);
                     showModalMessage("Import erfolgreich", "Ihre Familiendaten wurden erfolgreich importiert.");
                 } catch (error) {
-                    console.error("Error importing data:", error);
-                    showModalMessage("Import fehlgeschlagen", `Error importing data: ${error.message}`);
+                    console.error("Fehler beim Importieren der Daten:", error);
+                    showModalMessage("Import fehlgeschlagen", `Fehler beim Importieren der Daten: ${error.message}`);
                 } finally {
                     loadingSpinner.classList.remove('active');
-                    importFileInput.value = ''; // Clear file input
+                    importFileInput.value = '';
                 }
             };
             reader.readAsText(file);
         });
 
 
-        // --- Event Listeners ---
+        // --- Event-Listener ---
         addPersonBtn.addEventListener('click', openPersonModalForAdd);
         cancelBtn.addEventListener('click', closePersonModal);
         cancelDeleteBtn.addEventListener('click', closeConfirmModal);
@@ -1146,18 +1212,27 @@
         personForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = nameInput.value.trim();
+            const maidenName = maidenNameInput.value.trim(); // Neu
             const birthDate = birthDateInput.value;
+            const placeOfBirth = placeOfBirthInput.value.trim(); // Neu
+            const dateOfDeath = dateOfDeathInput.value;           // Neu
+            const placeOfDeath = placeOfDeathInput.value.trim();  // Neu
             const gender = genderSelect.value;
             const parent1 = parent1Select.value || '';
             const parent2 = parent2Select.value || '';
             const spouseId = spouseSelect.value || '';
+            const occupation = occupationInput.value.trim();      // Neu
+            const email = emailInput.value.trim();                // Neu
+            const phone = phoneInput.value.trim();                // Neu
+            const address = addressInput.value.trim();            // Neu
+            const profileImageUrl = profileImageUrlInput.value.trim(); // Neu
+            const notes = notesInput.value.trim();                // Neu
 
             if (!name || !gender) {
                 showModalMessage("Fehler", "Name und Geschlecht sind Pflichtfelder.");
                 return;
             }
 
-            // Validation: A person cannot be their own parent or spouse
             if (editingPersonId) {
                 if (parent1 === editingPersonId || parent2 === editingPersonId || spouseId === editingPersonId) {
                     showModalMessage("Fehler", "Eine Person kann nicht ihr eigener Elternteil oder Ehepartner sein.");
@@ -1165,7 +1240,6 @@
                 }
             }
 
-            // Validation: Parent 1 and Parent 2 cannot be the same person
             if (parent1 && parent2 && parent1 === parent2) {
                 showModalMessage("Fehler", "Elternteil 1 und Elternteil 2 können nicht dieselbe Person sein.");
                 return;
@@ -1173,11 +1247,21 @@
 
             const personData = {
                 name,
+                maidenName, // Neu
                 birthDate,
+                placeOfBirth, // Neu
+                dateOfDeath,     // Neu
+                placeOfDeath,   // Neu
                 gender,
                 parent1,
                 parent2,
-                spouseId
+                spouseId,
+                occupation,       // Neu
+                email,                // Neu
+                phone,                // Neu
+                address,             // Neu
+                profileImageUrl, // Neu
+                notes                 // Neu
             };
             addOrUpdatePerson(personData);
         });
@@ -1188,7 +1272,7 @@
             }
         });
 
-        // Close modal on click outside content
+        // Modale schließen bei Klick außerhalb des Inhalts
         personModal.addEventListener('click', (e) => {
             if (e.target === personModal) {
                 closePersonModal();
@@ -1205,7 +1289,7 @@
             }
         });
 
-        // Initialize on window load
+        // Initialisierung beim Laden des Fensters
         window.onload = initializeFirebase;
     </script>
 </body>
