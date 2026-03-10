@@ -751,7 +751,7 @@
                 // Hotkeys
                 window.addEventListener('keydown', (e) => {
                     const key = e.key;
-                    if (['1','2','3','4','I','J',' ','Control','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) {
+                    if (['1','2','3','4','I','J',' ','9','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) {
                         e.preventDefault();
                     }
                     if (key === '1') setMode('schedule');
@@ -761,7 +761,7 @@
                     else if (key === 'I' && intro1Blob) playIntro(intro1Blob);
                     else if (key === 'J' && intro2Blob) playIntro(intro2Blob);
                     else if (key === ' ') toggleOverlay();
-                    else if (key === 'Control') togglePresentation();
+                    else if (key === '9') togglePresentation();
 
                     // Navigation nur im Schedule-Modus
                     if (currentMode === 'schedule' && allEntries.length > 0) {
