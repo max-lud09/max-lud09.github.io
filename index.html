@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BHRT · Paralympics Milano Cortina · Endcard & Medal Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>BHRT · Paralympics Milano Cortina · Broadcast Suite</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            font-family: 'Segoe UI', 'Arial', system-ui, sans-serif;
         }
 
         body {
@@ -22,18 +22,21 @@
             transition: all 0.4s ease;
         }
 
-        /* PRÄSENTATIONSMODUS */
+        /* PRÄSENTATIONSMODUS (aktiviert mit S) */
         body.presentation-mode {
             padding: 0;
             background: #000;
             display: block;
+            overflow: hidden; /* Kein Scrollen im Vollbild */
         }
 
-        body.presentation-mode .upload-area {
+        body.presentation-mode .upload-area,
+        body.presentation-mode .control-bar {
             display: none;
         }
 
-        body.presentation-mode .bg-image-container {
+        /* Hintergrundbild-Container mit Standard-Bild */
+        .bg-image-container {
             position: fixed;
             top: 0;
             left: 0;
@@ -42,6 +45,11 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            z-index: 1;
+            background-image: url('https://max-lud09.github.io/videos/Background.jpg'); /* Standard */
+        }
+
+        body.presentation-mode .bg-image-container {
             z-index: 1;
         }
 
@@ -59,7 +67,7 @@
             pointer-events: none;
         }
 
-        /* Overlay im Präsentationsmodus – standardmäßig unsichtbar */
+        /* Overlay im Präsentationsmodus – standardmäßig unsichtbar (wird per Leertaste aktiv) */
         body.presentation-mode .overlay {
             opacity: 0;
             transition: opacity 0.3s;
@@ -70,24 +78,25 @@
             opacity: 1;
         }
 
-        /* FESTE GRÖSSE DES WEISSEN FELDES */
+        /* FESTE GRÖSSE DES WEISSEN FELDES (Zeitplan) */
         .overlay {
             width: 1100px;
             min-width: 1100px;
             max-width: 1100px;
             min-height: 700px;
-            background: #ffffff;
+            background: rgba(255,255,255,0.95); /* Leicht transparenter für realistischeren Look */
+            backdrop-filter: blur(2px);
             border-radius: 3rem 3rem 2rem 2rem;
             padding: 2.5rem 2.8rem;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(255,255,255,0.3);
             border-top: 4px solid #c02f2f;
             border-bottom: 4px solid #c02f2f;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
             color: #1e1e1e;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            transition: opacity 0.3s;
+            transition: box-shadow 0.3s;
         }
 
         /* Auf- und Zuklapp-Animation */
@@ -95,199 +104,64 @@
             0% { transform: scaleY(0); opacity: 0; transform-origin: top; }
             100% { transform: scaleY(1); opacity: 1; transform-origin: top; }
         }
-
         @keyframes collapseUp {
             0% { transform: scaleY(1); opacity: 1; transform-origin: top; }
             100% { transform: scaleY(0); opacity: 0; transform-origin: top; }
         }
+        .overlay.first-page { animation: expandDown 0.5s ease-out; }
+        .overlay.last-page { animation: collapseUp 0.5s ease-in forwards; }
 
-        .overlay.first-page {
-            animation: expandDown 0.6s ease-out;
-        }
-
-        .overlay.last-page {
-            animation: collapseUp 0.6s ease-in forwards;
-        }
-
-        /* Upload-Bereich */
-        .upload-area {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 60px;
-            padding: 1rem 2rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: white;
-            flex-wrap: wrap;
-            gap: 1rem;
-            z-index: 10;
-            position: relative;
-        }
-
-        .file-label {
-            background: #c02f2f;
-            color: white;
-            padding: 0.7rem 1.8rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: 0.2s;
-            border: none;
-            box-shadow: 0 4px 10px rgba(192, 47, 47, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .file-label:hover {
-            background: #a52828;
-            transform: scale(1.02);
-        }
-
-        #fileInput, #bgImageInput {
-            display: none;
-        }
-
-        .sample-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #eee;
-            padding: 0.7rem 1.8rem;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .sample-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .page-hint {
-            font-size: 1rem;
-            color: #ccc;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.4rem 1.2rem;
-            border-radius: 30px;
-            border-left: 3px solid #c02f2f;
-        }
-
+        /* Kopfzeile */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 2.2rem;
         }
-
         .logo-bhrt img {
-            height: 70px;
-            width: auto;
-            background: white;
-            border-radius: 12px;
-            padding: 6px 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border: none;
+            height: 70px; width: auto; background: white; border-radius: 12px; padding: 6px 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: none;
         }
-
-        .logo-paralympics img {
-            height: 80px;
-            width: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        .logo-paralympics img, .logo-olympics img {
+            height: 80px; width: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
-
         .day-badge {
-            font-size: 2rem;
-            font-weight: 700;
-            background: #f0f0f0;
-            color: #c02f2f;
-            padding: 0.6rem 2rem;
-            border-radius: 4rem;
-            letter-spacing: 1px;
-            border: 2px solid #c02f2f;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 2rem; font-weight: 700; background: rgba(240,240,240,0.9); color: #c02f2f;
+            padding: 0.6rem 2rem; border-radius: 4rem; border: 2px solid #c02f2f;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); backdrop-filter: blur(2px);
         }
 
-        .schedule-container {
-            transition: opacity 0.2s ease-in-out;
-            flex: 1;
-        }
-
+        /* Zeitplan-Einträge */
         .schedule-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1.8rem;
+            display: flex; flex-direction: column; gap: 1rem; margin-top: 1.8rem;
         }
-
         .schedule-item {
-            background: #f9f9f9;
-            border-radius: 2rem;
-            padding: 1rem 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            transition: all 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
+            background: rgba(249,249,249,0.9);
+            border-radius: 2rem; padding: 1rem 1.8rem;
+            display: flex; align-items: center; gap: 1.5rem;
+            border-left: 6px solid transparent; border-right: 6px solid transparent;
+            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
             cursor: pointer;
+            backdrop-filter: blur(2px);
         }
-
-        .schedule-item:hover {
-            background: #f0f0f0;
-        }
-
+        .schedule-item:hover { background: rgba(240,240,240,0.95); transform: scale(1.01); }
         .schedule-item.live-highlight {
-            border-left: 6px solid #ed354f;
-            border-right: 6px solid #ed354f;
-            background: #ffeeee;
-            transform: scale(1.02);
-            box-shadow: 0 0 0 2px rgba(237,53,79,0.2);
+            border-left: 6px solid #ed354f; border-right: 6px solid #ed354f;
+            background: rgba(255,238,238,0.95); transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(237,53,79,0.5);
         }
-
         .time {
-            font-size: 2.2rem;
-            font-weight: 800;
-            min-width: 150px;
-            color: #1281c6;
-            text-shadow: 1px 1px 0 #e0e0e0;
-            letter-spacing: 1px;
+            font-size: 2.2rem; font-weight: 800; min-width: 150px;
+            color: #1281c6; text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
         }
-
-        .event-info {
-            flex: 1;
-        }
-
-        .event-name {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #1e1e1e;
-        }
-
-        .event-name-bs {
-            font-size: 1.4rem;
-            font-style: italic;
-            color: #666;
-            margin-top: 4px;
-        }
-
+        .event-info { flex: 1; }
+        .event-name { font-size: 1.8rem; font-weight: 600; color: #1e1e1e; }
+        .event-name-bs { font-size: 1.4rem; font-style: italic; color: #555; margin-top: 4px; }
         .badge {
-            padding: 0.6rem 1.2rem;
-            border-radius: 3rem;
-            font-weight: 600;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            color: #ffffff;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            padding: 0.6rem 1.2rem; border-radius: 3rem; font-weight: 600; font-size: 1.2rem;
+            text-transform: uppercase; color: #fff; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
-
         .badge.live { background: #ed354f; }
         .badge.stream { background: #1281c6; }
         .badge.news { background: #03a750; }
@@ -295,191 +169,146 @@
         .badge.studio { background: #8e44ad; }
 
         .footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 2rem; color: #666; font-size: 1.3rem;
+            border-top: 1px dashed rgba(0,0,0,0.2); padding-top: 1.5rem;
+        }
+        body.presentation-mode .footer span:last-child { display: none; }
+
+        /* Steuerleiste */
+        .control-bar {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 60px;
+            padding: 1rem 2rem;
+            margin-top: 1rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 2rem;
-            color: #888;
-            font-size: 1.3rem;
-            border-top: 1px dashed #ccc;
-            padding-top: 1.5rem;
-        }
-
-        body.presentation-mode .footer span:last-child {
-            display: none;
-        }
-
-        .page-indicator {
-            background: #f0f0f0;
-            color: #333;
-            padding: 0.4rem 1.5rem;
-            border-radius: 3rem;
-            font-weight: 600;
-            border: 1px solid #ccc;
-            visibility: hidden;
-        }
-
-        .end-of-day {
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #c02f2f;
-            margin-top: 3rem;
-            padding: 2rem;
-            border-top: 2px solid #c02f2f;
-            letter-spacing: 2px;
-        }
-
-        /* ENDCARD */
-        #endcard {
-            display: none;
-            flex-direction: column;
+            flex-wrap: wrap;
+            gap: 0.8rem;
             justify-content: center;
-            align-items: center;
-            height: 100%;
+            color: white;
+        }
+        .ctrl-btn {
+            background: #2c3e50; color: white; border: none; border-radius: 3rem;
+            padding: 0.7rem 1.5rem; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .ctrl-btn.special { background: #c02f2f; }
+        .ctrl-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* Video-Vorladung */
+        .video-preload { display: none; }
+
+        /* Broadcast-End Animation */
+        .broadcast-end {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(8px);
+        }
+        .broadcast-end.active { display: flex; }
+        .end-rectangle {
+            background: #1e2a3a; border: 4px solid #c02f2f; border-radius: 4rem;
+            padding: 3rem 5rem; max-width: 1000px; width: 80%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8); position: relative; overflow: hidden;
             text-align: center;
-            animation: fadeIn 1s ease;
         }
-
-        #endcard.active {
-            display: flex;
+        .animated-squares { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+        .square {
+            position: absolute; width: 60px; height: 60px;
+            background: rgba(192,47,47,0.2); border: 2px solid #c02f2f;
+            animation: moveSquare 8s infinite linear;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .square:nth-child(1) { top:10%; left:5%; animation-delay:0s; background:rgba(18,129,198,0.2); border-color:#1281c6; }
+        .square:nth-child(2) { top:70%; left:80%; width:80px; height:80px; animation-delay:2s; background:rgba(3,167,80,0.2); border-color:#03a750; }
+        .square:nth-child(3) { top:40%; left:90%; width:40px; height:40px; animation-delay:4s; background:rgba(237,53,79,0.2); border-color:#ed354f; }
+        @keyframes moveSquare {
+            0% { transform: rotate(0deg) scale(1); opacity:0.5; }
+            50% { transform: rotate(180deg) scale(1.2); opacity:0.8; }
+            100% { transform: rotate(360deg) scale(1); opacity:0.5; }
         }
+        .end-logos { display: flex; justify-content: center; gap: 3rem; margin: 2rem 0; }
+        .end-logos img { height: 100px; width: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+        .end-text { color: white; font-size: 3rem; font-weight: 700; text-transform: uppercase; line-height:1.4; text-shadow:0 0 20px #c02f2f; }
+        .end-text .lang-bs { font-size: 2.5rem; color: #ffd966; }
+        .end-text .lang-cyrl { font-family: 'Segoe UI', 'Arial Unicode MS', sans-serif; font-size: 2.5rem; color: #a5d6ff; }
 
-        .endcard-title {
-            font-size: 4rem;
-            font-weight: 800;
-            color: #c02f2f;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
+        /* Werbung Overlay */
+        .ad-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.7); z-index:1500; display:none;
+            justify-content: center; align-items: center; backdrop-filter: blur(4px);
         }
-
-        .endcard-message {
-            font-size: 2.5rem;
-            margin: 1rem 0;
-            color: #333;
+        .ad-overlay.active { display: flex; }
+        .ad-rectangle {
+            background: #0b1a2a; border: 4px solid #f39c12; border-radius: 3rem;
+            padding: 2rem 4rem; position: relative; overflow: hidden; text-align: center;
+            max-width: 800px;
         }
-
-        .endcard-message small {
-            font-size: 1.8rem;
-            color: #666;
-            font-style: italic;
-        }
-
-        .endcard-cyrillic {
-            font-family: 'Segoe UI', 'Arial Unicode MS', sans-serif;
-        }
-
-        /* MEDALTABLE */
-        #medaltable {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
-            animation: fadeIn 1s ease;
-        }
-
-        #medaltable.active {
-            display: flex;
-        }
-
-        .medaltable-title {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #c02f2f;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-        }
-
-        .medaltable-grid {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 2rem;
-        }
-
-        .medaltable-grid th {
-            background: #c02f2f;
-            color: white;
-            padding: 1rem;
-            font-weight: 600;
-        }
-
-        .medaltable-grid td {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .medaltable-grid tr:last-child td {
-            border-bottom: none;
-        }
-
-        .medaltable-grid .country {
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .gold { color: #FFD700; font-weight: bold; }
-        .silver { color: #C0C0C0; font-weight: bold; }
-        .bronze { color: #CD7F32; font-weight: bold; }
-
-        /* Steuerungshinweis */
-        .mode-hint {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        .bg-upload label {
-            background: #2c3e50;
-            color: white;
-            padding: 0.7rem 1.8rem;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .bg-upload label:hover { background: #1e2b37; }
+        .ad-text { color: white; font-size: 2.5rem; font-weight: 700; text-transform: uppercase; }
+        .ad-text div { margin: 0.3rem 0; }
+        .ad-text .small { font-size: 1.8rem; opacity: 0.9; }
     </style>
 </head>
 <body>
-<div class="bg-image-container" id="bgImageContainer" style="background-image: none;"></div>
+    <!-- Hintergrundbild-Container (Standard bereits gesetzt) -->
+    <div class="bg-image-container" id="bgImageContainer"></div>
 
-<div class="studio-preview">
-    <div class="upload-area">
-        <label for="fileInput" class="file-label"><span>📁</span> Upload schedule (text file)</label>
-        <input type="file" id="fileInput" accept=".txt, text/plain">
-        <label for="bgImageInput" class="file-label" style="background: #2c3e50;"><span>🖼️</span> Upload background image</label>
-        <input type="file" id="bgImageInput" accept="image/*">
-        <button class="sample-btn" id="loadSampleBtn">📋 Load sample data</button>
-        <span class="page-hint">↑↓ Select · ←→ Pages · Ctrl presentation · Space open/close · E endcard · M medal table · Esc back</span>
+    <!-- Video-Vorladung -->
+    <div class="video-preload">
+        <video id="videoIntro1" preload="auto" src="https://max-lud09.github.io/videos/BHT.mp4"></video>
+        <video id="videoIntro2" preload="auto" src="https://max-lud09.github.io/videos/OBS.mp4"></video>
     </div>
 
-    <!-- Haupt-Overlay (Zeitplan) -->
-    <div class="overlay" id="overlay">
-        <!-- Normaler Zeitplan-Inhalt -->
-        <div id="scheduleContent">
+    <!-- Broadcast-End Animation -->
+    <div class="broadcast-end" id="broadcastEnd">
+        <div class="end-rectangle">
+            <div class="animated-squares">
+                <div class="square"></div><div class="square"></div><div class="square"></div>
+            </div>
+            <div class="end-logos">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2260%22%20viewBox%3D%220%200%20120%2060%22%3E%3Crect%20width%3D%22120%22%20height%3D%2260%22%20fill%3D%22%23c02f2f%22%2F%3E%3Ctext%20x%3D%2210%22%20y%3D%2242%22%20font-size%3D%2236%22%20fill%3D%22white%22%20font-weight%3D%22bold%22%3EBHRT%3C%2Ftext%3E%3C%2Fsvg%3E';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Paralympics" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2245%22%20fill%3D%22%23c02f2f%22%20stroke%3D%22white%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%2220%22%20y%3D%2265%22%20fill%3D%22white%22%20font-size%3D%2224%22%3E2026%3C%2Ftext%3E%3C%2Fsvg%3E';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Olympic_rings_without_rims.svg" alt="Olympics" style="background:white; border-radius:20px; padding:5px;" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%2250%22%20viewBox%3D%220%200%20100%2050%22%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2225%22%20r%3D%2210%22%20stroke%3D%22%23000%22%20stroke-width%3D%222%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E';">
+            </div>
+            <div class="end-text">
+                <div>BROADCAST ENDED</div>
+                <div class="lang-bs">EMITOVANJE ZAVRŠENO</div>
+                <div class="lang-cyrl">ЕМИТОВАЊЕ ЗАВРШЕНО</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Werbung Overlay -->
+    <div class="ad-overlay" id="adOverlay">
+        <div class="ad-rectangle" id="adRectangle">
+            <div class="animated-squares">
+                <div class="square"></div><div class="square"></div><div class="square"></div>
+            </div>
+            <div class="ad-text" id="adText"></div>
+        </div>
+    </div>
+
+    <div class="studio-preview">
+        <!-- Upload-Bereich -->
+        <div class="upload-area">
+            <label for="fileInput" class="file-label"><span>📁</span> Upload schedule (text file)</label>
+            <input type="file" id="fileInput" accept=".txt, text/plain">
+            <label for="bgImageInput" class="file-label" style="background: #2c3e50;"><span>🖼️</span> Upload custom background</label>
+            <input type="file" id="bgImageInput" accept="image/*">
+            <button class="sample-btn" id="loadSampleBtn">📋 Load sample data</button>
+            <span class="page-hint">↑↓·←→·S·Space·W/X·1/2</span>
+        </div>
+
+        <!-- Zeitplan-Overlay -->
+        <div class="overlay" id="overlay">
             <div class="header">
                 <div class="logo-bhrt">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2260%22%20viewBox%3D%220%200%20120%2060%22%3E%3Crect%20width%3D%22120%22%20height%3D%2260%22%20fill%3D%22%23c02f2f%22%2F%3E%3Ctext%20x%3D%2210%22%20y%3D%2242%22%20font-size%3D%2236%22%20fill%3D%22white%22%20font-weight%3D%22bold%22%3EBHRT%3C%2Ftext%3E%3C%2Fsvg%3E';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2260%22%20viewBox%3D%220%200%20120%2060%22%3E%3Crect%20width%3D%22120%22%20height%3D%2260%22%20fill%3D%22%23c02f2f%22%2F%3E%3Ctext%20x%3D%2210%22%20y%3D%2242%22%20font-size%3D%2236%22%20fill%3D%22white%22%20font-weight%3D%22bold%22%3EBHRT%3C%2Ftext%3E%3C%2Fsvg%3E';">
                 </div>
                 <div class="day-badge" id="dayDisplay">PARALYMPICS MILANO CORTINA</div>
                 <div class="logo-paralympics">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Milano Cortina 2026" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2245%22%20fill%3D%22%23c02f2f%22%20stroke%3D%22white%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%2220%22%20y%3D%2265%22%20fill%3D%22white%22%20font-size%3D%2224%22%3E2026%3C%2Ftext%3E%3C%2Fsvg%3E';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Milano Cortina 2026" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2245%22%20fill%3D%22%23c02f2f%22%20stroke%3D%22white%22%20stroke-width%3D%223%22%2F%3E%3Ctext%20x%3D%2220%22%20y%3D%2265%22%20fill%3D%22white%22%20font-size%3D%2224%22%3E2026%3C%2Ftext%3E%3C%2Fsvg%3E';">
                 </div>
             </div>
 
@@ -488,357 +317,327 @@
             </div>
 
             <div id="endOfDayMessage" class="end-of-day" style="display: none;">END OF THE PARALYMPIC DAY</div>
+
+            <div class="footer">
+                <span id="pageInfo">Page 1 / 1</span>
+                <span class="page-indicator">.</span>
+            </div>
         </div>
 
-        <!-- Endcard (versteckt) -->
-        <div id="endcard">
-            <div class="endcard-title">🏁 STREAM ENDED 🏁</div>
-            <div class="endcard-message">Prijenos završen</div>
-            <div class="endcard-message endcard-cyrillic">Пријенос завршен</div>
-            <div class="endcard-message"><small>Thank you for watching</small></div>
-        </div>
-
-        <!-- Medaillenspiegel (versteckt) -->
-        <div id="medaltable">
-            <div class="medaltable-title">🥇 MEDAL STANDINGS 🥇</div>
-            <table class="medaltable-grid">
-                <thead>
-                    <tr><th>Country</th><th>🥇</th><th>🥈</th><th>🥉</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td class="country">Norway</td><td class="gold">5</td><td class="silver">3</td><td class="bronze">2</td></tr>
-                    <tr><td class="country">Germany</td><td class="gold">4</td><td class="silver">4</td><td class="bronze">1</td></tr>
-                    <tr><td class="country">USA</td><td class="gold">3</td><td class="silver">2</td><td class="bronze">4</td></tr>
-                    <tr><td class="country">Austria</td><td class="gold">2</td><td class="silver">3</td><td class="bronze">2</td></tr>
-                    <tr><td class="country">Italy</td><td class="gold">1</td><td class="silver">2</td><td class="bronze">3</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="footer">
-            <span id="pageInfo">Page 1 / 1</span>
-            <span class="page-indicator">.</span>
+        <!-- Steuerleiste für Touch -->
+        <div class="control-bar">
+            <button class="ctrl-btn special" id="btnPresentation">S (Presentation + Fullscreen)</button>
+            <button class="ctrl-btn" id="btnSpace">␣ (Open/Close Overlay)</button>
+            <button class="ctrl-btn" id="btnBroadcastEnd">S (Broadcast End)</button>
+            <button class="ctrl-btn" id="btnAdStart">W (Ad Start)</button>
+            <button class="ctrl-btn" id="btnAdStop">X (Ad Stop)</button>
+            <button class="ctrl-btn" id="btnIntro1">1 (BHRT Intro)</button>
+            <button class="ctrl-btn" id="btnIntro2">2 (Paralympics Intro)</button>
         </div>
     </div>
-</div>
 
-<script>
-    (function() {
-        let allEntries = [];
-        let currentPage = 0;
-        const pageSize = 5;
-        let highlightIndex = 0;
-        let isAnimating = false;
+    <script>
+        (function() {
+            // ---------- BESTEHENDE ZEITPLAN-FUNKTIONALITÄT ----------
+            let allEntries = [];
+            let currentPage = 0;
+            const pageSize = 5;
+            let highlightIndex = 0;
+            let isAnimating = false;
 
-        // Modus: 'schedule', 'endcard', 'medaltable'
-        let currentMode = 'schedule';
+            const sampleData = [
+                "DAY 2 – SUN 08 MAR 2026|07:55|Live Studio Opening - Day 2 Preview|Uživo otvaranje studija - pregled 2. dana|studio",
+                "DAY 2 – SUN 08 MAR 2026|08:15|Wheelchair Curling - Round Robin (Session 3)|Karling u invalidskim kolicima - 3. sesija|live",
+                "DAY 2 – SUN 08 MAR 2026|09:30|BHRTV News - Morning Edition|BHRTV vijesti - jutarnje izdanje|news",
+                "DAY 2 – SUN 08 MAR 2026|09:40|Para Alpine Skiing - Super-G (Women/Men)|Para alpsko skijanje - superveleslalom (žene/muškarci)|live",
+                "DAY 2 – SUN 08 MAR 2026|11:34|Para Biathlon - Sprint (Finals)|Para biatlon - sprint (finale)|stream",
+                "DAY 2 – SUN 08 MAR 2026|12:45|Studio Mid-Day Wrap - Analysis & Highlights|Podnevni pregled - analiza i vrhunci|analysis",
+                "DAY 2 – SUN 08 MAR 2026|13:00|Para Ice Hockey - Preliminary Round|Para hokej na ledu - preliminarna runda|stream",
+                "DAY 2 – SUN 08 MAR 2026|14:45|BHRTV News - Afternoon Update|BHRTV vijesti - poslijepodnevne vijesti|news",
+                "DAY 2 – SUN 08 MAR 2026|14:55|Para Snowboard - Snowboard Cross Finals|Para snoubord - snoukros finale|live",
+                "DAY 2 – SUN 08 MAR 2026|16:30|Wheelchair Curling - Round Robin (Session 4)|Karling u invalidskim kolicima - 4. sesija|live",
+                "DAY 2 – SUN 08 MAR 2026|17:45|Studio Interview - Guest: Paralympic Legend|Studio intervju - gość: paralimpijska legenda|studio",
+                "DAY 2 – SUN 08 MAR 2026|18:04|Para Ice Hockey - Evening Session|Para hokej na ledu - večernja sesija|stream",
+                "DAY 2 – SUN 08 MAR 2026|20:00|BHRTV News - Evening Main News|BHRTV vijesti - glavne večernje vijesti|news",
+                "DAY 2 – SUN 08 MAR 2026|20:10|Para Cross-Country - Daily Recap/Highlights|Para skijaško trčanje - dnevni pregled|analysis",
+                "DAY 2 – SUN 08 MAR 2026|21:30|Special Feature - Athletes' Village Life|Specijal - život u olimpijskom selu|studio",
+                "DAY 2 – SUN 08 MAR 2026|22:15|The Nightly Recap - Medal Ceremony & Top 10|Večernji pregled - ceremonija i top 10|analysis",
+                "DAY 2 – SUN 08 MAR 2026|23:25|Sign-off - Day 2 Closing Credits|Zatvaranje - završetak 2. dana|studio"
+            ];
 
-        // Beispiel-Daten
-        const sampleData = [
-            "DAY 2 – SUN 08 MAR 2026|08:15|Wheelchair Curling - Round Robin (Session 3)|Karling u invalidskim kolicima - 3. sesija|live",
-            "DAY 2 – SUN 08 MAR 2026|09:30|BHRTV News - Morning Edition|BHRTV vijesti - jutarnje izdanje|news",
-            "DAY 2 – SUN 08 MAR 2026|09:45|Para Alpine Skiing - Super-G (Women/Men)|Para alpsko skijanje - superveleslalom (žene/muškarci)|live",
-            "DAY 2 – SUN 08 MAR 2026|11:34|Para Biathlon - Sprint Finals|Para biatlon - sprint (finale)|live",
-            "DAY 2 – SUN 08 MAR 2026|12:45|Studio Mid-Day Wrap - Analysis & Highlights|Podnevni pregled - analiza i vrhunci|analysis",
-            "DAY 2 – SUN 08 MAR 2026|13:00|Para Ice Hockey - Preliminary Round|Para hokej na ledu - preliminarna runda|live",
-            "DAY 2 – SUN 08 MAR 2026|14:40|BHRTV News - Afternoon Update|BHRTV vijesti - poslijepodnevne vijesti|news",
-            "DAY 2 – SUN 08 MAR 2026|14:55|Para Snowboard - Snowboard Cross Finals|Para snoubord - snoukros finale|live",
-            "DAY 2 – SUN 08 MAR 2026|16:30|Wheelchair Curling - Round Robin (Session 4)|Karling u invalidskim kolicima - 4. sesija|live",
-            "DAY 2 – SUN 08 MAR 2026|17:45|Studio Interview - Guest: Paralympic Legend|Studio intervju - gość: paralimpijska legenda|studio",
-            "DAY 2 – SUN 08 MAR 2026|18:04|Para Ice Hockey - Evening Session|Para hokej na ledu - večernja sesija|stream",
-            "DAY 2 – SUN 08 MAR 2026|20:00|BHRTV News - Evening Main News|BHRTV vijesti - glavne večernje vijesti|news",
-            "DAY 2 – SUN 08 MAR 2026|20:15|Para Cross-Country - Daily Recap/Highlights|Para skijaško trčanje - dnevni pregled|analysis",
-            "DAY 2 – SUN 08 MAR 2026|21:03|Special Feature - Athletes' Village Life|Specijal - život u olimpijskom selu|studio",
-            "DAY 2 – SUN 08 MAR 2026|22:15|The Nightly Recap - Medal Ceremony & Top 10|Večernji pregled - ceremonija i top 10|analysis"
-        ];
+            function parseTextFileContent(text) {
+                const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                const entries = [];
+                lines.forEach(line => {
+                    const parts = line.split('|').map(s => s.trim());
+                    if (parts.length >= 5) {
+                        entries.push({ day: parts[0], time: parts[1], en: parts[2], bs: parts[3], type: parts[4].toLowerCase() });
+                    }
+                });
+                return entries;
+            }
 
-        function parseTextFileContent(text) {
-            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            const entries = [];
-            lines.forEach(line => {
-                const parts = line.split('|').map(s => s.trim());
-                if (parts.length >= 5) {
-                    entries.push({
-                        day: parts[0],
-                        time: parts[1],
-                        en: parts[2],
-                        bs: parts[3],
-                        type: parts[4].toLowerCase()
-                    });
+            function renderPage() {
+                const container = document.getElementById('scheduleList');
+                const dayDisplay = document.getElementById('dayDisplay');
+                const overlay = document.getElementById('overlay');
+                const endMsg = document.getElementById('endOfDayMessage');
+                if (!container) return;
+
+                if (allEntries.length === 0) {
+                    container.innerHTML = `<div class="schedule-item" style="justify-content:center; opacity:0.6; color:#666;">📄 No data – please upload a text file</div>`;
+                    document.getElementById('pageInfo').innerText = 'Page 0 / 0';
+                    dayDisplay.innerText = 'PARALYMPICS MILANO CORTINA';
+                    endMsg.style.display = 'none';
+                    return;
                 }
-            });
-            return entries;
-        }
 
-        function renderPage() {
-            const container = document.getElementById('scheduleList');
-            const dayDisplay = document.getElementById('dayDisplay');
-            const overlay = document.getElementById('overlay');
-            const endMsg = document.getElementById('endOfDayMessage');
-            
-            if (!container) return;
+                if (allEntries[0]?.day) dayDisplay.innerText = allEntries[0].day.toUpperCase();
 
-            if (allEntries.length === 0) {
-                container.innerHTML = `<div class="schedule-item" style="justify-content:center; opacity:0.6; color:#666;">📄 No data – please upload a text file</div>`;
-                document.getElementById('pageInfo').innerText = 'Page 0 / 0';
-                dayDisplay.innerText = 'PARALYMPICS MILANO CORTINA';
-                endMsg.style.display = 'none';
-                return;
+                const start = currentPage * pageSize;
+                const pageEntries = allEntries.slice(start, start + pageSize);
+                const totalPages = Math.ceil(allEntries.length / pageSize);
+
+                if (!isAnimating) overlay.classList.remove('first-page', 'last-page');
+
+                endMsg.style.display = (currentPage === totalPages - 1 && allEntries.length > 0) ? 'block' : 'none';
+
+                let htmlStr = '';
+                pageEntries.forEach((entry, idx) => {
+                    const isHighlight = (idx === highlightIndex);
+                    let badgeClass = 'badge';
+                    if (entry.type === 'live') badgeClass += ' live';
+                    else if (entry.type === 'stream') badgeClass += ' stream';
+                    else if (entry.type === 'news') badgeClass += ' news';
+                    else if (entry.type === 'analysis') badgeClass += ' analysis';
+                    else if (entry.type === 'studio') badgeClass += ' studio';
+                    else badgeClass += ' news';
+                    const highlightClass = isHighlight ? 'live-highlight' : '';
+                    htmlStr += `<div class="schedule-item ${highlightClass}" data-page-index="${idx}"><div class="time">${entry.time}</div><div class="event-info"><div class="event-name">${entry.en}</div><div class="event-name-bs">${entry.bs}</div></div><div class="${badgeClass}">${entry.type}</div></div>`;
+                });
+                container.innerHTML = htmlStr;
+                document.getElementById('pageInfo').innerText = `Page ${currentPage+1} / ${totalPages || 1}`;
+
+                if (pageEntries.length === 0) highlightIndex = 0;
+                else if (highlightIndex >= pageEntries.length) highlightIndex = pageEntries.length - 1;
             }
 
-            if (allEntries[0]?.day) {
-                dayDisplay.innerText = allEntries[0].day.toUpperCase();
-            }
-
-            const start = currentPage * pageSize;
-            const pageEntries = allEntries.slice(start, start + pageSize);
-            const totalPages = Math.ceil(allEntries.length / pageSize);
-
-            if (!isAnimating) {
-                overlay.classList.remove('first-page', 'last-page');
-            }
-
-            if (currentPage === totalPages - 1 && allEntries.length > 0) {
-                endMsg.style.display = 'block';
-            } else {
-                endMsg.style.display = 'none';
-            }
-
-            let htmlStr = '';
-            pageEntries.forEach((entry, idx) => {
-                const isHighlight = (idx === highlightIndex);
-                let badgeClass = 'badge';
-                
-                if (entry.type === 'live') badgeClass += ' live';
-                else if (entry.type === 'stream') badgeClass += ' stream';
-                else if (entry.type === 'news') badgeClass += ' news';
-                else if (entry.type === 'analysis') badgeClass += ' analysis';
-                else if (entry.type === 'studio') badgeClass += ' studio';
-                else badgeClass += ' news';
-
-                const highlightClass = isHighlight ? 'live-highlight' : '';
-
-                htmlStr += `
-                    <div class="schedule-item ${highlightClass}" data-page-index="${idx}">
-                        <div class="time">${entry.time}</div>
-                        <div class="event-info">
-                            <div class="event-name">${entry.en}</div>
-                            <div class="event-name-bs">${entry.bs}</div>
-                        </div>
-                        <div class="${badgeClass}">${entry.type}</div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = htmlStr;
-            document.getElementById('pageInfo').innerText = `Page ${currentPage+1} / ${totalPages || 1}`;
-
-            if (pageEntries.length === 0) highlightIndex = 0;
-            else if (highlightIndex >= pageEntries.length) highlightIndex = pageEntries.length - 1;
-        }
-
-        function moveHighlight(direction) {
-            if (currentMode !== 'schedule') return; // Nur im Zeitplan-Modus
-
-            const pageEntries = allEntries.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
-            if (pageEntries.length === 0) return;
-
-            const totalPages = Math.ceil(allEntries.length / pageSize);
-
-            if (direction === -1 && highlightIndex === 0) {
-                if (currentPage > 0) {
-                    changePage(-1, 'last');
+            function moveHighlight(direction) {
+                const pageEntries = allEntries.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+                if (pageEntries.length === 0) return;
+                const totalPages = Math.ceil(allEntries.length / pageSize);
+                if (direction === -1 && highlightIndex === 0) {
+                    if (currentPage > 0) changePage(-1, 'last');
+                    return;
                 }
-                return;
-            }
-            
-            if (direction === 1 && highlightIndex === pageEntries.length - 1) {
-                if (currentPage < totalPages - 1) {
-                    changePage(1, 'first');
+                if (direction === 1 && highlightIndex === pageEntries.length - 1) {
+                    if (currentPage < totalPages - 1) changePage(1, 'first');
+                    return;
                 }
-                return;
-            }
-
-            let newIndex = highlightIndex + direction;
-            if (newIndex < 0 || newIndex >= pageEntries.length) return;
-            
-            highlightIndex = newIndex;
-            renderPage();
-        }
-
-        function changePage(delta, highlightTarget) {
-            if (currentMode !== 'schedule') return;
-
-            const totalPages = Math.ceil(allEntries.length / pageSize);
-            if (totalPages === 0 || isAnimating) return;
-
-            let newPage = currentPage + delta;
-            if (newPage < 0 || newPage >= totalPages) return;
-
-            isAnimating = true;
-
-            setTimeout(() => {
-                currentPage = newPage;
-                
-                if (highlightTarget === 'first') {
-                    highlightIndex = 0;
-                } else if (highlightTarget === 'last') {
-                    const entriesOnNewPage = allEntries.slice(currentPage * pageSize, currentPage * pageSize + pageSize).length;
-                    highlightIndex = entriesOnNewPage - 1;
-                } else {
-                    highlightIndex = 0;
-                }
-                
+                let newIndex = highlightIndex + direction;
+                if (newIndex < 0 || newIndex >= pageEntries.length) return;
+                highlightIndex = newIndex;
                 renderPage();
-                
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 100);
-            }, 50);
-        }
-
-        // Modus umschalten
-        function setMode(mode) {
-            currentMode = mode;
-            const overlay = document.getElementById('overlay');
-            const scheduleContent = document.getElementById('scheduleContent');
-            const endcard = document.getElementById('endcard');
-            const medaltable = document.getElementById('medaltable');
-
-            // Alle ausblenden
-            scheduleContent.style.display = 'none';
-            endcard.classList.remove('active');
-            medaltable.classList.remove('active');
-
-            if (mode === 'schedule') {
-                scheduleContent.style.display = 'block';
-            } else if (mode === 'endcard') {
-                endcard.classList.add('active');
-            } else if (mode === 'medaltable') {
-                medaltable.classList.add('active');
             }
-        }
 
-        function loadFromFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                const entries = parseTextFileContent(content);
-                if (entries.length > 0) {
-                    allEntries = entries;
-                    currentPage = 0;
-                    highlightIndex = 0;
-                    setMode('schedule');
+            function changePage(delta, highlightTarget) {
+                const totalPages = Math.ceil(allEntries.length / pageSize);
+                if (totalPages === 0 || isAnimating) return;
+                let newPage = currentPage + delta;
+                if (newPage < 0 || newPage >= totalPages) return;
+                isAnimating = true;
+                setTimeout(() => {
+                    currentPage = newPage;
+                    if (highlightTarget === 'first') highlightIndex = 0;
+                    else if (highlightTarget === 'last') {
+                        const entriesOnNewPage = allEntries.slice(currentPage * pageSize, currentPage * pageSize + pageSize).length;
+                        highlightIndex = entriesOnNewPage - 1;
+                    } else highlightIndex = 0;
                     renderPage();
-                } else {
-                    alert('File could not be parsed. Please use format: Day|Time|English|Bosnian|type (live/stream/news/analysis/studio)');
-                }
-            };
-            reader.readAsText(file);
-        }
+                    setTimeout(() => { isAnimating = false; }, 100);
+                }, 50);
+            }
 
-        function loadSample() {
-            allEntries = parseTextFileContent(sampleData.join('\n'));
-            currentPage = 0;
-            highlightIndex = 0;
-            setMode('schedule');
-            renderPage();
-        }
-
-        // Hintergrundbild hochladen
-        document.getElementById('bgImageInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            function loadFromFile(file) {
                 const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const bgContainer = document.getElementById('bgImageContainer');
-                    bgContainer.style.backgroundImage = `url('${ev.target.result}')`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Präsentationsmodus togglen
-        function togglePresentationMode() {
-            document.body.classList.toggle('presentation-mode');
-            const overlay = document.getElementById('overlay');
-            if (document.body.classList.contains('presentation-mode')) {
-                overlay.classList.remove('active', 'first-page', 'last-page');
-            } else {
-                overlay.classList.add('active');
-            }
-        }
-
-        // Leertaste im Präsentationsmodus: Overlay öffnen/schließen
-        function toggleOverlayVisibility() {
-            if (!document.body.classList.contains('presentation-mode')) return;
-            
-            const overlay = document.getElementById('overlay');
-            if (overlay.classList.contains('active')) {
-                overlay.classList.add('last-page');
-                setTimeout(() => {
-                    overlay.classList.remove('active', 'last-page');
-                }, 600);
-            } else {
-                overlay.classList.add('active', 'first-page');
-                setTimeout(() => {
-                    overlay.classList.remove('first-page');
-                }, 600);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('fileInput').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) loadFromFile(file);
-                e.target.value = '';
-            });
-
-            document.getElementById('loadSampleBtn').addEventListener('click', loadSample);
-
-            window.addEventListener('keydown', (e) => {
-                // Verhindern von Seitenscrollen
-                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Control', ' ', 'E', 'e', 'M', 'm', 'Escape'].includes(e.key)) {
-                    e.preventDefault();
-                }
-
-                // Nur wenn nicht im Präsentationsmodus oder wenn im Präsentationsmodus, aber Leertaste anders behandelt
-                // Tasten für Modi
-                if (e.key === 'E' || e.key === 'e') {
-                    setMode('endcard');
-                } else if (e.key === 'M' || e.key === 'm') {
-                    setMode('medaltable');
-                } else if (e.key === 'Escape') {
-                    setMode('schedule');
-                } else if (e.key === 'ArrowUp') {
-                    moveHighlight(-1);
-                } else if (e.key === 'ArrowDown') {
-                    moveHighlight(1);
-                } else if (e.key === 'ArrowLeft') {
-                    changePage(-1, 'first');
-                } else if (e.key === 'ArrowRight') {
-                    changePage(1, 'first');
-                } else if (e.key === 'Control' && !e.repeat) {
-                    togglePresentationMode();
-                } else if (e.key === ' ') {
-                    toggleOverlayVisibility();
-                }
-            });
-
-            document.addEventListener('click', (e) => {
-                const item = e.target.closest('.schedule-item');
-                if (item && currentMode === 'schedule') {
-                    const idx = item.dataset.pageIndex;
-                    if (idx !== undefined) {
-                        highlightIndex = parseInt(idx);
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const entries = parseTextFileContent(content);
+                    if (entries.length > 0) {
+                        allEntries = entries;
+                        currentPage = 0; highlightIndex = 0;
                         renderPage();
+                    } else alert('Invalid format');
+                };
+                reader.readAsText(file);
+            }
+
+            function loadSample() {
+                allEntries = parseTextFileContent(sampleData.join('\n'));
+                currentPage = 0; highlightIndex = 0;
+                renderPage();
+            }
+
+            // ---------- NEUE FUNKTIONEN ----------
+            const broadcastEnd = document.getElementById('broadcastEnd');
+            const adOverlay = document.getElementById('adOverlay');
+            const adText = document.getElementById('adText');
+
+            function toggleBroadcastEnd() {
+                broadcastEnd.classList.toggle('active');
+            }
+
+            function showAdStart() {
+                adText.innerHTML = `
+                    <div>ADVERTISEMENT</div>
+                    <div class="lang-bs small">REKLAMA</div>
+                    <div class="lang-cyrl small">РЕКЛАМА</div>
+                `;
+                adOverlay.classList.add('active');
+            }
+
+            function showAdEnd() {
+                adText.innerHTML = `
+                    <div>ADVERTISEMENT ENDED</div>
+                    <div class="lang-bs small">REKLAMA ZAVRŠENA</div>
+                    <div class="lang-cyrl small">РЕКЛАМА ЗАВРШЕНА</div>
+                `;
+                adOverlay.classList.add('active');
+                setTimeout(() => { adOverlay.classList.remove('active'); }, 3000);
+            }
+
+            function playIntro1() {
+                const video = document.getElementById('videoIntro1');
+                if (video) {
+                    const newWin = window.open("", "_blank");
+                    newWin.document.write(`
+                        <html><body style="margin:0; background:black">
+                        <video src="${video.src}" autoplay controls style="width:100%;height:100%"></video>
+                        </body></html>
+                    `);
+                }
+            }
+            function playIntro2() {
+                const video = document.getElementById('videoIntro2');
+                if (video) {
+                    const newWin = window.open("", "_blank");
+                    newWin.document.write(`
+                        <html><body style="margin:0; background:black">
+                        <video src="${video.src}" autoplay controls style="width:100%;height:100%"></video>
+                        </body></html>
+                    `);
+                }
+            }
+
+            // NEU: Präsentationsmodus mit S + Vollbild
+            function togglePresentationMode() {
+                const body = document.body;
+                const wasPresentation = body.classList.contains('presentation-mode');
+                
+                if (!wasPresentation) {
+                    // Vollbild aktivieren
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        document.documentElement.msRequestFullscreen();
+                    }
+                } else {
+                    // Vollbild beenden
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
                     }
                 }
+                
+                body.classList.toggle('presentation-mode');
+                const overlay = document.getElementById('overlay');
+                if (body.classList.contains('presentation-mode')) {
+                    overlay.classList.remove('active', 'first-page', 'last-page');
+                } else {
+                    overlay.classList.add('active');
+                }
+            }
+
+            // Leertaste im Präsentationsmodus
+            function toggleOverlayVisibility() {
+                if (!document.body.classList.contains('presentation-mode')) return;
+                const overlay = document.getElementById('overlay');
+                if (overlay.classList.contains('active')) {
+                    overlay.classList.add('last-page');
+                    setTimeout(() => { overlay.classList.remove('active', 'last-page'); }, 600);
+                } else {
+                    overlay.classList.add('active', 'first-page');
+                    setTimeout(() => { overlay.classList.remove('first-page'); }, 600);
+                }
+            }
+
+            // Hintergrundbild-Upload (benutzerdefiniert)
+            document.getElementById('bgImageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        document.getElementById('bgImageContainer').style.backgroundImage = `url('${ev.target.result}')`;
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
 
-            loadSample();
-        });
-    })();
-</script>
+            // Event-Listener
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) loadFromFile(file);
+                    e.target.value = '';
+                });
+                document.getElementById('loadSampleBtn').addEventListener('click', loadSample);
+
+                // Tastatur
+                window.addEventListener('keydown', (e) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 's', 'S', 'w', 'W', 'x', 'X', '1', '2'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                    if (e.key === 'ArrowUp') moveHighlight(-1);
+                    else if (e.key === 'ArrowDown') moveHighlight(1);
+                    else if (e.key === 'ArrowLeft') changePage(-1, 'first');
+                    else if (e.key === 'ArrowRight') changePage(1, 'first');
+                    else if (e.key === ' ') toggleOverlayVisibility();
+                    else if (e.key.toLowerCase() === 's') togglePresentationMode(); // S startet Präsentationsmodus
+                    else if (e.key.toLowerCase() === 'w') showAdStart();
+                    else if (e.key.toLowerCase() === 'x') { adOverlay.classList.remove('active'); showAdEnd(); }
+                    else if (e.key === '1') playIntro1();
+                    else if (e.key === '2') playIntro2();
+                });
+
+                // Button-Listener
+                document.getElementById('btnPresentation').addEventListener('click', togglePresentationMode);
+                document.getElementById('btnSpace').addEventListener('click', toggleOverlayVisibility);
+                document.getElementById('btnBroadcastEnd').addEventListener('click', toggleBroadcastEnd);
+                document.getElementById('btnAdStart').addEventListener('click', showAdStart);
+                document.getElementById('btnAdStop').addEventListener('click', () => { adOverlay.classList.remove('active'); showAdEnd(); });
+                document.getElementById('btnIntro1').addEventListener('click', playIntro1);
+                document.getElementById('btnIntro2').addEventListener('click', playIntro2);
+
+                // Klick auf Zeitplan-Eintrag setzt Highlight
+                document.addEventListener('click', (e) => {
+                    const item = e.target.closest('.schedule-item');
+                    if (item) {
+                        const idx = item.dataset.pageIndex;
+                        if (idx !== undefined) {
+                            highlightIndex = parseInt(idx);
+                            renderPage();
+                        }
+                    }
+                });
+
+                loadSample();
+            });
+        })();
+    </script>
 </body>
 </html>
