@@ -1,1296 +1,719 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamischer Familienbaum</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- D3.js CDN for visualization -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <title>BHRT · Paralympics Milano Cortina · Studio Control</title>
+    <!-- HLS.js für m3u8-Streams -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        /* Grundlegende Body-Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            background: #1a1e2b;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            transition: all 0.4s ease;
+        }
+
+        /* Präsentationsmodus */
+        body.presentation-mode {
+            padding: 0;
+            background: #000;
+            display: block;
+        }
+        body.presentation-mode .control-panel {
+            display: none;
+        }
+        body.presentation-mode .bg-image-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+        body.presentation-mode .studio-preview {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        body.presentation-mode .overlay {
+            width: 1100px;
+            min-width: 1100px;
+            max-width: 1100px;
+            min-height: 700px;
+            background: #ffffff;
+            border-radius: 3rem;
+            padding: 2.5rem;
+            border: 4px solid #c02f2f;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+            color: #1e1e1e;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+        body.presentation-mode .overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Control Panel (immer sichtbar außer im Präsentationsmodus) */
+        .control-panel {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 3rem;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #c02f2f;
+        }
+        .panel-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+        .btn {
+            background: #2c3e50;
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #555;
+        }
+        .btn:hover { background: #3e5a70; }
+        .btn.red { background: #c02f2f; }
+        .btn.red:hover { background: #a52828; }
+        .btn.green { background: #03a750; }
+        .input-field {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: none;
+            background: #333;
+            color: white;
+            width: 200px;
+        }
+        .hotkey-badge {
+            background: #c02f2f;
+            color: white;
+            border-radius: 1rem;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Overlay – verschiedene Modi */
+        .overlay {
+            width: 1100px;
+            min-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 3rem;
+            padding: 2.5rem;
+            border: 4px solid #c02f2f;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.3);
+            color: #1e1e1e;
+            transition: all 0.3s;
+        }
+        .mode-indicator {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #c02f2f;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Zeitplan-Modus (bisher) */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .logo-bhrt img, .logo-paralympics img {
+            height: 70px;
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .day-badge {
+            font-size: 2rem;
+            font-weight: 700;
+            background: #f0f0f0;
+            color: #c02f2f;
+            padding: 0.6rem 2rem;
+            border-radius: 4rem;
+            border: 2px solid #c02f2f;
+        }
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .schedule-item {
+            background: #f9f9f9;
+            border-radius: 2rem;
+            padding: 1rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .schedule-item.live-highlight {
+            border-left: 6px solid #ed354f;
+            border-right: 6px solid #ed354f;
+            background: #ffeeee;
+            transform: scale(1.02);
+        }
+        .time { font-size: 2rem; font-weight: 800; min-width: 150px; color: #1281c6; }
+        .event-info { flex: 1; }
+        .event-name { font-size: 1.6rem; font-weight: 600; }
+        .event-name-bs { font-size: 1.2rem; font-style: italic; color: #666; }
+        .badge {
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+        }
+        .badge.live { background: #ed354f; }
+        .badge.stream { background: #1281c6; }
+        .badge.news { background: #03a750; }
+        .badge.analysis { background: #f39c12; }
+        .badge.studio { background: #8e44ad; }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            color: #888;
+            font-size: 1.2rem;
+            border-top: 1px dashed #ccc;
+            padding-top: 1rem;
+        }
+
+        /* Multiview-Modus (8 Streams) */
+        .multiview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stream-box {
+            background: #000;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid #c02f2f;
+        }
+        .stream-box video {
+            width: 100%;
+            height: 120px;
+            background: #222;
+            object-fit: cover;
+        }
+        .stream-label {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.3rem;
+            text-align: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .stream-config {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .stream-config input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem;
+            border-radius: 2rem;
+            border: 1px solid #ccc;
+        }
+
+        /* Einzelstream-Modus */
+        .single-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .single-stream video {
+            width: 100%;
+            max-height: 500px;
+            background: #000;
+            border-radius: 2rem;
+        }
+        .moderator-overlay {
+            background: rgba(192,47,47,0.9);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 3rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-top: -3rem;
+            position: relative;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            border: 2px solid white;
+        }
+
+        /* Endcard */
+        .endcard {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            color: #334155;
-        }
-
-        /* Container-Styles für Hauptbereiche und Modale */
-        .container {
-            background-color: #ffffff;
-            border-radius: 1.5rem; /* rounded-3xl */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem; /* p-10 */
-            width: 100%;
-            max-width: 1200px;
-            transition: all 0.3s ease-in-out;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* Button-Styles */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem; /* rounded-xl */
-            font-weight: 600; /* font-semibold */
-            transition: all 0.2s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background-color: #4f46e5; /* indigo-600 */
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #4338ca; /* indigo-700 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-secondary {
-            background-color: #64748b; /* slate-500 */
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #475569; /* slate-600 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-danger {
-            background-color: #ef4444; /* red-500 */
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626; /* red-600 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Formular-Input-Styles */
-        input[type="text"], input[type="date"], input[type="email"], input[type="password"], select, textarea {
-            padding: 0.75rem;
-            border-radius: 0.5rem; /* rounded-lg */
-            border: 1px solid #cbd5e1; /* slate-300 */
-            width: 100%;
-            font-size: 1rem;
-            color: #334155;
-            transition: all 0.2s ease-in-out;
-        }
-
-        input[type="text"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #4f46e5; /* indigo-600 */
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* ring-indigo-200 */
-        }
-
-        /* Modal-Styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-
-        .modal.open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 2.5rem; /* p-10 */
-            border-radius: 1.5rem; /* rounded-3xl */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            max-width: 500px;
-            width: 90%;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease-in-out;
-            max-height: 90vh; /* Begrenzt die Höhe des Modals */
-            overflow-y: auto; /* Ermöglicht Scrollen im Modal */
-        }
-
-        .modal.open .modal-content {
-            transform: translateY(0);
-        }
-
-        /* D3.js Baum-Visualisierungs-Styles */
-        .tree-container {
-            width: 100%;
-            overflow-x: auto; /* Ermöglicht horizontales Scrollen bei breiten Bäumen */
-            padding: 20px 0;
             text-align: center;
-            min-height: 400px; /* Mindesthöhe für den Baum */
+            gap: 2rem;
+            min-height: 500px;
+        }
+        .endcard-logos {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+        .endcard-message {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .message-english { color: #c02f2f; }
+        .message-bosnian { color: #1281c6; font-style: italic; }
+        .message-cyrillic { font-family: 'Noto Serif', 'Times New Roman', serif; color: #03a750; }
+
+        /* Intro-Overlay */
+        .intro-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: black;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .intro-overlay video {
+            max-width: 100%;
+            max-height: 100%;
         }
 
-        .node circle {
-            fill: #e0e7ff; /* indigo-100 */
-            stroke: #6366f1; /* indigo-500 */
-            stroke-width: 2px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .node text {
-            font-size: 0.85rem;
-            font-weight: 600;
-            fill: #3730a3; /* indigo-800 */
-            text-anchor: middle;
-            pointer-events: none; /* Ermöglicht Klick durch auf den Kreis */
-            transition: all 0.2s ease-in-out;
-        }
-
-        .node.highlighted circle {
-            fill: #fcd34d; /* amber-300 */
-            stroke: #fbbf24; /* amber-400 */
-            stroke-width: 3px;
-        }
-
-        .node.highlighted text {
-            fill: #92400e; /* amber-800 */
-        }
-
-        .link {
-            fill: none;
-            stroke: #94a3b8; /* slate-400 */
-            stroke-width: 1.5px;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .spouse-link {
-            fill: none;
-            stroke: #ef4444; /* red-500 */
-            stroke-width: 2px;
-            stroke-dasharray: 5 5; /* Gestrichelte Linie */
-            transition: all 0.2s ease-in-out;
-        }
-
-        /* Lade-Spinner-Styles */
-        .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #4f46e5;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            animation: spin 1s linear infinite;
-            margin: 2rem auto;
-            display: none; /* Standardmäßig ausgeblendet */
-        }
-
-        .loading-spinner.active {
-            display: block;
-        }
-
-        /* Tooltip-Styles */
-        #tooltip {
-            position: absolute;
-            text-align: left;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #cbd5e1;
-            border-radius: 0.75rem;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
-        }
-        #tooltip p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #334155;
-        }
-        #tooltip p strong {
-            color: #4f46e5;
-        }
-
-        /* Keyframe-Animationen */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Responsive Anpassungen */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1.5rem;
-            }
-            .modal-content {
-                padding: 1.5rem;
-            }
-            .btn {
-                width: 100%;
-            }
-            .flex-wrap-mobile {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            .flex-wrap-mobile > button {
-                width: calc(50% - 0.5rem); /* Anpassung für Lücke */
-            }
-        }
+        /* Hilfsklassen */
+        .hidden { display: none !important; }
+        .mt-2 { margin-top: 1rem; }
     </style>
 </head>
 <body>
-    <div id="auth-section" class="container text-center mb-8">
-        <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Willkommen zum Familienbaum</h2>
-        <p class="text-gray-600 mb-6">Bitte melden Sie sich an, um Ihren Familienbaum zu verwalten.</p>
-
-        <!-- Login Formular -->
-        <form id="login-form" class="space-y-4 max-w-sm mx-auto mb-8">
-            <div>
-                <label for="login-email" class="sr-only">E-Mail</label>
-                <input type="email" id="login-email" placeholder="E-Mail" required>
-            </div>
-            <div>
-                <label for="login-password" class="sr-only">Passwort</label>
-                <input type="password" id="login-password" placeholder="Passwort" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-full">
-                <i class="fas fa-sign-in-alt"></i> Anmelden
-            </button>
-        </form>
-        <!-- Die Registrierungsfunktion wurde entfernt, um nur die Anmeldung zu ermöglichen. -->
+    <!-- Intro-Video-Container (unsichtbar, wird bei Bedarf eingeblendet) -->
+    <div id="introOverlay" class="intro-overlay">
+        <video id="introVideo" controls autoplay></video>
     </div>
 
-    <div id="app-section" class="container hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-            <h2 class="text-3xl font-extrabold text-gray-800">Ihr Familienbaum</h2>
-            <div class="flex gap-4 flex-wrap-mobile w-full sm:w-auto">
-                <button id="add-person-btn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Person hinzufügen
-                </button>
-                <button id="export-data-btn" class="btn btn-secondary">
-                    <i class="fas fa-download"></i> Daten exportieren
-                </button>
-                <button id="import-data-btn" class="btn btn-secondary">
-                    <i class="fas fa-upload"></i> Daten importieren
-                </button>
-                <input type="file" id="import-file-input" accept=".json" class="hidden">
-                <button id="logout-btn" class="btn btn-secondary">
-                    <i class="fas fa-sign-out-alt"></i> Abmelden
-                </button>
+    <!-- Hintergrundbild-Container -->
+    <div id="bgImageContainer" class="bg-image-container" style="background-image: none;"></div>
+
+    <!-- Hauptcontainer -->
+    <div class="studio-preview">
+        <!-- Control Panel (immer oben) -->
+        <div class="control-panel">
+            <div class="panel-section">
+                <span style="color:#c02f2f; font-weight:700;">BHRT STUDIO</span>
+                <button class="btn red" id="loadScheduleBtn">📁 Upload Schedule</button>
+                <input type="file" id="fileInput" accept=".txt" style="display:none;">
+                
+                <button class="btn" id="loadIntro1Btn">🎬 Intro 1</button>
+                <input type="file" id="intro1Input" accept="video/*" style="display:none;">
+                <button class="btn" id="loadIntro2Btn">🎬 Intro 2</button>
+                <input type="file" id="intro2Input" accept="video/*" style="display:none;">
+                
+                <button class="btn" id="loadBgBtn">🖼️ Background</button>
+                <input type="file" id="bgImageInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="panel-section">
+                <span>Hotkeys:</span>
+                <span class="hotkey-badge">1 Plan</span>
+                <span class="hotkey-badge">2 Multi</span>
+                <span class="hotkey-badge">3 Single</span>
+                <span class="hotkey-badge">4 End</span>
+                <span class="hotkey-badge">I Intro1</span>
+                <span class="hotkey-badge">J Intro2</span>
+                <span class="hotkey-badge">Space open/close</span>
+                <span class="hotkey-badge">Ctrl Präsentation</span>
             </div>
         </div>
 
-        <div id="user-info" class="text-sm text-gray-500 mb-4">
-            Angemeldet als: <span id="current-user-id" class="font-mono text-gray-700"></span>
-        </div>
+        <!-- Das eigentliche Overlay (wechselt den Modus) -->
+        <div id="overlay" class="overlay">
+            <div id="modeIndicator" class="mode-indicator">📋 Schedule Mode</div>
+            
+            <!-- Modus 1: Zeitplan (Standard) -->
+            <div id="scheduleMode" class="">
+                <div class="header">
+                    <div class="logo-bhrt"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT" onerror="this.src='data:image/svg+xml...'"></div>
+                    <div id="dayDisplay" class="day-badge">PARALYMPICS MILANO CORTINA</div>
+                    <div class="logo-paralympics"><img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Milano Cortina 2026" onerror="this.src='data:image/svg+xml...'"></div>
+                </div>
+                <div id="scheduleList" class="schedule-list"></div>
+                <div id="endOfDayMessage" class="end-of-day" style="display:none;">END OF THE PARALYMPIC DAY</div>
+                <div class="footer">
+                    <span id="pageInfo">Page 1 / 1</span>
+                    <span>↑↓ Select · ←→ Pages</span>
+                </div>
+            </div>
 
-        <!-- Suchleiste -->
-        <div class="mb-6">
-            <label for="search-input" class="sr-only">Person suchen</label>
-            <input type="text" id="search-input" placeholder="Person nach Name suchen..." class="w-full">
-        </div>
+            <!-- Modus 2: Multiview (8 Streams) -->
+            <div id="multiviewMode" style="display:none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <h2>📺 Multiview (8 Streams)</h2>
+                    <button class="btn green" id="applyStreamsBtn">Apply Streams</button>
+                </div>
+                <div class="stream-config" id="streamConfigs">
+                    <!-- 8 URL + Titel Paare -->
+                </div>
+                <div id="multiviewGrid" class="multiview-grid"></div>
+            </div>
 
-        <div class="loading-spinner" id="loading-spinner"></div>
+            <!-- Modus 3: Einzelstream + Moderator -->
+            <div id="singleStreamMode" style="display:none;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" id="singleStreamUrl" class="input-field" placeholder="Stream URL (mp4/m3u8)" style="flex:3;">
+                    <input type="text" id="moderatorName" class="input-field" placeholder="Moderator Name" style="flex:1;">
+                    <button class="btn green" id="loadSingleStream">Load</button>
+                </div>
+                <div class="single-stream">
+                    <video id="singleVideo" controls crossorigin="anonymous"></video>
+                    <div id="moderatorOverlay" class="moderator-overlay" style="display:none;"></div>
+                </div>
+            </div>
 
-        <div id="family-tree-display" class="tree-container">
-            <!-- D3.js SVG-Baum wird hier gerendert -->
-            <p id="no-data-message" class="text-gray-500 text-lg hidden">Noch keine Personen im Familienbaum. Fügen Sie eine hinzu!</p>
-        </div>
-    </div>
-
-    <!-- Modal für Person hinzufügen/bearbeiten -->
-    <div id="person-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-6">Person hinzufügen</h3>
-            <form id="person-form" class="space-y-5">
-                <!-- Basisinformationen -->
-                <div>
-                    <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Name:</label>
-                    <input type="text" id="name" placeholder="Vollständiger Name" required>
+            <!-- Modus 4: Endcard -->
+            <div id="endcardMode" style="display:none;">
+                <div class="endcard">
+                    <div class="endcard-logos">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT" style="height:100px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Paralympics" style="height:100px;">
+                    </div>
+                    <div class="endcard-message">
+                        <div class="message-english">THE STREAM HAS ENDED</div>
+                        <div class="message-bosnian">PRIJENOS JE ZAVRŠEN</div>
+                        <div class="message-cyrillic">ПРИЈЕНОС ЈЕ ЗАВРШЕН</div>
+                    </div>
+                    <div style="font-size:1.2rem; color:#666;">Thank you for watching BHRT</div>
                 </div>
-                <div>
-                    <label for="maidenName" class="block text-gray-700 text-sm font-semibold mb-2">Mädchenname (optional):</label>
-                    <input type="text" id="maidenName" placeholder="Mädchenname">
-                </div>
-                <div>
-                    <label for="gender" class="block text-gray-700 text-sm font-semibold mb-2">Geschlecht:</label>
-                    <select id="gender" required>
-                        <option value="">Wählen Sie ein Geschlecht</option>
-                        <option value="male">Männlich</option>
-                        <option value="female">Weiblich</option>
-                        <option value="other">Andere</option>
-                    </select>
-                </div>
-
-                <!-- Lebensdaten -->
-                <div>
-                    <label for="birthDate" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsdatum:</label>
-                    <input type="date" id="birthDate">
-                </div>
-                <div>
-                    <label for="placeOfBirth" class="block text-gray-700 text-sm font-semibold mb-2">Geburtsort:</label>
-                    <input type="text" id="placeOfBirth" placeholder="Geburtsort">
-                </div>
-                <div>
-                    <label for="dateOfDeath" class="block text-gray-700 text-sm font-semibold mb-2">Sterbedatum (optional):</label>
-                    <input type="date" id="dateOfDeath">
-                </div>
-                <div>
-                    <label for="placeOfDeath" class="block text-gray-700 text-sm font-semibold mb-2">Sterbeort (optional):</label>
-                    <input type="text" id="placeOfDeath" placeholder="Sterbeort">
-                </div>
-
-                <!-- Beziehungen -->
-                <div>
-                    <label for="parent1" class="block text-gray-700 text-sm font-semibold mb-2">Elternteil 1 (optional):</label>
-                    <select id="parent1">
-                        <option value="">Kein Elternteil</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="parent2" class="block text-gray-700 text-sm font-semibold mb-2">Elternteil 2 (optional):</label>
-                    <select id="parent2">
-                        <option value="">Kein Elternteil</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="spouse" class="block text-gray-700 text-sm font-semibold mb-2">Ehepartner (optional):</label>
-                    <select id="spouse">
-                        <option value="">Kein Ehepartner</option>
-                    </select>
-                </div>
-
-                <!-- Zusätzliche Informationen -->
-                <div>
-                    <label for="occupation" class="block text-gray-700 text-sm font-semibold mb-2">Beruf (optional):</label>
-                    <input type="text" id="occupation" placeholder="Beruf">
-                </div>
-                <div>
-                    <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">E-Mail (optional):</label>
-                    <input type="email" id="email" placeholder="E-Mail-Adresse">
-                </div>
-                <div>
-                    <label for="phone" class="block text-gray-700 text-sm font-semibold mb-2">Telefon (optional):</label>
-                    <input type="text" id="phone" placeholder="Telefonnummer">
-                </div>
-                <div>
-                    <label for="address" class="block text-gray-700 text-sm font-semibold mb-2">Adresse (optional):</label>
-                    <input type="text" id="address" placeholder="Straße, Hausnummer, Stadt, PLZ">
-                </div>
-                <div>
-                    <label for="profileImageUrl" class="block text-gray-700 text-sm font-semibold mb-2">Profilbild URL (optional):</label>
-                    <input type="text" id="profileImageUrl" placeholder="URL zum Profilbild">
-                </div>
-                <div>
-                    <label for="notes" class="block text-gray-700 text-sm font-semibold mb-2">Notizen (optional):</label>
-                    <textarea id="notes" rows="3" placeholder="Zusätzliche Notizen zur Person..."></textarea>
-                </div>
-
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancel-btn" class="btn btn-secondary">Abbrechen</button>
-                    <button type="submit" id="save-person-btn" class="btn btn-primary">Speichern</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal für Bestätigung (Löschen) -->
-    <div id="confirm-modal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6">Bestätigen Sie die Löschung</h3>
-            <p class="text-gray-700 mb-8">Sind Sie sicher, dass Sie <span id="confirm-person-name" class="font-semibold"></span> aus dem Familienbaum löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</p>
-            <div class="flex justify-end gap-4">
-                <button type="button" id="cancel-delete-btn" class="btn btn-secondary">Abbrechen</button>
-                <button type="button" id="confirm-delete-btn" class="btn btn-danger">Löschen</button>
             </div>
         </div>
     </div>
 
-    <!-- Generisches Nachrichten-Modal -->
-    <div id="message-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="message-modal-title" class="text-2xl font-bold text-gray-800 mb-6">Nachricht</h3>
-            <p id="message-modal-text" class="text-gray-700 mb-8"></p>
-            <div class="flex justify-end">
-                <button class="btn btn-primary" id="close-message-modal">OK</button>
-            </div>
-        </div>
-    </div>
+    <script>
+        (function() {
+            // ---------- Globale Variablen ----------
+            let allEntries = [];
+            let currentPage = 0;
+            const pageSize = 5;
+            let highlightIndex = 0;
+            let isAnimating = false;
+            let currentMode = 'schedule'; // schedule, multiview, single, endcard
+            let intro1Blob = null;
+            let intro2Blob = null;
+            let hlsInstances = []; // für HLS-Streams
 
-    <!-- Tooltip für D3.js Knoten -->
-    <div id="tooltip" class="rounded-lg shadow-lg p-3 bg-white text-sm"></div>
+            // ---------- Beispiel-Zeitplan (heute 14:30 - 20:30) ----------
+            const sampleData = [
+                "DAY 3 – MON 09 MAR 2026|14:30|Wheelchair Curling - Round Robin (Session 5)|Karling u invalidskim kolicima - 5. sesija|live",
+                "DAY 3 – MON 09 MAR 2026|15:15|BHRTV News - Afternoon Update|BHRTV vijesti - poslijepodnevne vijesti|news",
+                "DAY 3 – MON 09 MAR 2026|15:30|Para Alpine Skiing - Giant Slalom|Para alpsko skijanje - veleslalom|live",
+                "DAY 3 – MON 09 MAR 2026|16:45|Studio Interview - Guest Athlete|Studio intervju - gość|studio",
+                "DAY 3 – MON 09 MAR 2026|17:30|Para Ice Hockey - Quarterfinal|Para hokej na ledu - četvrtfinale|live",
+                "DAY 3 – MON 09 MAR 2026|19:00|Para Biathlon - Pursuit Finals|Para biatlon - potjera finale|live",
+                "DAY 3 – MON 09 MAR 2026|20:00|BHRTV News - Evening Main News|BHRTV vijesti - glavne večernje vijesti|news",
+                "DAY 3 – MON 09 MAR 2026|20:30|The Nightly Recap - Medal Ceremony|Večernji pregled - ceremonija|analysis"
+            ];
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-        // Globale Variablen für Firebase-Konfiguration und App-ID
-        // WICHTIG: Ersetzen Sie den Platzhalter unten durch Ihre tatsächliche Firebase-Projektkonfiguration.
-        // Sie finden diese in Ihren Firebase-Projekteinstellungen -> Projekteinstellungen -> Allgemein -> Ihre Apps -> Firebase SDK-Snippet (Config).
-        const firebaseConfigPlaceholder = {
-            apiKey: "AIzaSyAgMUEnYEaAcbmwvmrHVBMr7dlL52CciRk",
-  authDomain: "stamm-baum-ludwig.firebaseapp.com",
-  databaseURL: "https://stamm-baum-ludwig-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "stamm-baum-ludwig",
-  storageBucket: "stamm-baum-ludwig.firebasestorage.app",
-  messagingSenderId: "898486161819",
-  appId: "1:898486161819:web:28e7c9775f9406412f913e"
-        };
-
-        // Verwenden Sie die Platzhalterkonfiguration für die Produktion.
-        // In der Canvas-Umgebung werden __app_id und __firebase_config automatisch bereitgestellt.
-        // Für die GitHub-Bereitstellung verwenden Sie firebaseConfigPlaceholder.
-        const appId = firebaseConfigPlaceholder.appId; // Verwenden Sie die App-ID aus Ihrer Konfiguration
-        const firebaseConfig = firebaseConfigPlaceholder;
-
-        let app;
-        let auth;
-        let db;
-        let userId = null;
-        let familyMembers = {}; // Speichert alle Familienmitglieder als Objekt {id: personData}
-        let currentSearchQuery = ''; // Speichert die aktuelle Suchanfrage
-
-        // DOM-Elemente
-        const authSection = document.getElementById('auth-section');
-        const appSection = document.getElementById('app-section');
-        const loginForm = document.getElementById('login-form');
-        const loginEmailInput = document.getElementById('login-email');
-        const loginPasswordInput = document.getElementById('login-password');
-        const logoutBtn = document.getElementById('logout-btn');
-        const addPersonBtn = document.getElementById('add-person-btn');
-        const exportDataBtn = document.getElementById('export-data-btn');
-        const importDataBtn = document.getElementById('import-data-btn');
-        const importFileInput = document.getElementById('import-file-input');
-        const familyTreeDisplay = document.getElementById('family-tree-display');
-        const personModal = document.getElementById('person-modal');
-        const confirmModal = document.getElementById('confirm-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const personForm = document.getElementById('person-form');
-        const nameInput = document.getElementById('name');
-        const maidenNameInput = document.getElementById('maidenName'); // Neu
-        const birthDateInput = document.getElementById('birthDate');
-        const placeOfBirthInput = document.getElementById('placeOfBirth'); // Neu
-        const dateOfDeathInput = document.getElementById('dateOfDeath');   // Neu
-        const placeOfDeathInput = document.getElementById('placeOfDeath'); // Neu
-        const genderSelect = document.getElementById('gender');
-        const parent1Select = document.getElementById('parent1');
-        const parent2Select = document.getElementById('parent2');
-        const spouseSelect = document.getElementById('spouse');
-        const occupationInput = document.getElementById('occupation');     // Neu
-        const emailInput = document.getElementById('email');               // Neu
-        const phoneInput = document.getElementById('phone');               // Neu
-        const addressInput = document.getElementById('address');           // Neu
-        const profileImageUrlInput = document.getElementById('profileImageUrl'); // Neu
-        const notesInput = document.getElementById('notes');               // Neu
-        const cancelBtn = document.getElementById('cancel-btn');
-        const savePersonBtn = document.getElementById('save-person-btn');
-        const confirmPersonName = document.getElementById('confirm-person-name');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const currentUserIdSpan = document.getElementById('current-user-id');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const noDataMessage = document.getElementById('no-data-message');
-        const searchInput = document.getElementById('search-input');
-        const messageModal = document.getElementById('message-modal');
-        const messageModalTitle = document.getElementById('message-modal-title');
-        const messageModalText = document.getElementById('message-modal-text');
-        const closeMessageModalBtn = document.getElementById('close-message-modal');
-        const tooltip = d3.select("#tooltip"); // D3.js Tooltip Element
-
-        let editingPersonId = null; // Speichert die ID der Person, die gerade bearbeitet wird
-        let deletingPersonId = null; // Speichert die ID der Person, die gelöscht werden soll
-
-        // D3.js Konfiguration
-        const margin = { top: 60, right: 90, bottom: 60, left: 90 };
-        let width = 0;
-        let height = 0;
-        const nodeRadius = 40; // Radius des Kreises für jeden Knoten (etwas größer für mehr Platz)
-        const textOffset = 50; // Abstand des Textes vom Kreis
-
-        let svg; // Das SVG-Element für den Baum
-        let g;   // Gruppe für den Baum (für Transformationen)
-        let treeLayout; // D3 Baum-Layout
-
-        // --- Firebase Initialisierung und Authentifizierung ---
-        async function initializeFirebase() {
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getDatabase(app);
-
-                // Listener für Authentifizierungsstatusänderungen
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        currentUserIdSpan.textContent = userId;
-                        authSection.classList.add('hidden');
-                        appSection.classList.remove('hidden');
-                        console.log("Benutzer angemeldet:", userId);
-                        // Daten abrufen, sobald der Benutzer angemeldet ist
-                        listenForFamilyData();
-                    } else {
-                        userId = null;
-                        currentUserIdSpan.textContent = '';
-                        authSection.classList.remove('hidden');
-                        appSection.classList.add('hidden');
-                        familyMembers = {}; // Baumdaten leeren
-                        renderFamilyTree(); // Baum neu rendern (leer)
-                        console.log("Benutzer abgemeldet.");
+            // ---------- Hilfsfunktionen ----------
+            function parseTextFileContent(text) {
+                const lines = text.split(/\r?\n/).filter(l => l.trim());
+                return lines.map(line => {
+                    const parts = line.split('|').map(s => s.trim());
+                    if (parts.length >= 5) {
+                        return { day: parts[0], time: parts[1], en: parts[2], bs: parts[3], type: parts[4].toLowerCase() };
                     }
+                    return null;
+                }).filter(e => e);
+            }
+
+            function renderSchedule() {
+                const container = document.getElementById('scheduleList');
+                const dayDisplay = document.getElementById('dayDisplay');
+                if (!container) return;
+                if (allEntries.length === 0) {
+                    container.innerHTML = '<div class="schedule-item">No data</div>';
+                    document.getElementById('pageInfo').innerText = 'Page 0/0';
+                    return;
+                }
+                dayDisplay.innerText = allEntries[0]?.day.toUpperCase() || 'PARALYMPICS';
+                const start = currentPage * pageSize;
+                const pageEntries = allEntries.slice(start, start + pageSize);
+                const totalPages = Math.ceil(allEntries.length / pageSize);
+                let html = '';
+                pageEntries.forEach((e, idx) => {
+                    const highlightClass = (idx === highlightIndex) ? 'live-highlight' : '';
+                    const badgeClass = `badge ${e.type}`;
+                    html += `<div class="schedule-item ${highlightClass}" data-index="${idx}">
+                        <div class="time">${e.time}</div>
+                        <div class="event-info"><div class="event-name">${e.en}</div><div class="event-name-bs">${e.bs}</div></div>
+                        <div class="${badgeClass}">${e.type}</div>
+                    </div>`;
                 });
-
-            } catch (error) {
-                console.error("Fehler bei der Firebase-Initialisierung:", error);
-                showModalMessage("Fehler", `Es gab ein Problem beim Laden der Anwendung: ${error.message}`);
+                container.innerHTML = html;
+                document.getElementById('pageInfo').innerText = `Page ${currentPage+1} / ${totalPages}`;
+                document.getElementById('endOfDayMessage').style.display = (currentPage === totalPages-1) ? 'block' : 'none';
             }
-        }
 
-        // --- Anmeldefunktion ---
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = loginEmailInput.value;
-            const password = loginPasswordInput.value;
-            loadingSpinner.classList.add('active');
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                showModalMessage("Erfolg", "Erfolgreich angemeldet!");
-            } catch (error) {
-                console.error("Anmeldung fehlgeschlagen:", error);
-                showModalMessage("Anmeldefehler", `Anmeldung fehlgeschlagen: ${error.message}`);
-            } finally {
-                loadingSpinner.classList.remove('active');
+            // ---------- Multiview Setup ----------
+            function setupMultiview() {
+                const configDiv = document.getElementById('streamConfigs');
+                configDiv.innerHTML = '';
+                for (let i = 0; i < 8; i++) {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.gap = '0.5rem';
+                    div.style.marginBottom = '0.5rem';
+                    div.innerHTML = `
+                        <input type="text" id="streamUrl${i}" class="input-field" placeholder="Stream ${i+1} URL" style="flex:2;">
+                        <input type="text" id="streamTitle${i}" class="input-field" placeholder="Titel" style="flex:1;">
+                    `;
+                    configDiv.appendChild(div);
+                }
+                document.getElementById('applyStreamsBtn').onclick = applyMultiviewStreams;
             }
-        });
 
-        logoutBtn.addEventListener('click', async () => {
-            loadingSpinner.classList.add('active');
-            try {
-                await signOut(auth);
-                showModalMessage("Abmeldung", "Sie wurden erfolgreich abgemeldet.");
-            } catch (error) {
-                console.error("Abmeldung fehlgeschlagen:", error);
-                showModalMessage("Abmeldefehler", `Abmeldung fehlgeschlagen: ${error.message}`);
-            } finally {
-                loadingSpinner.classList.remove('active');
+            function applyMultiviewStreams() {
+                const grid = document.getElementById('multiviewGrid');
+                grid.innerHTML = '';
+                // Alte HLS-Instanzen zerstören
+                hlsInstances.forEach(hls => hls.destroy());
+                hlsInstances = [];
+
+                for (let i = 0; i < 8; i++) {
+                    const url = document.getElementById(`streamUrl${i}`).value;
+                    const title = document.getElementById(`streamTitle${i}`).value || `Stream ${i+1}`;
+                    const box = document.createElement('div');
+                    box.className = 'stream-box';
+                    const video = document.createElement('video');
+                    video.id = `streamVideo${i}`;
+                    video.controls = false;
+                    video.autoplay = true;
+                    video.muted = (i !== 0); // nur erster Stream Ton
+                    if (url) {
+                        if (url.includes('.m3u8') && Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            hlsInstances.push(hls);
+                        } else {
+                            video.src = url;
+                        }
+                    }
+                    box.appendChild(video);
+                    const label = document.createElement('div');
+                    label.className = 'stream-label';
+                    label.innerText = title;
+                    box.appendChild(label);
+                    grid.appendChild(box);
+                }
             }
-        });
 
-        // --- Firebase Realtime Database Operationen ---
-        function getFamilyRef() {
-            if (!userId) {
-                console.error("Keine Benutzer-ID verfügbar. Kann nicht auf die Datenbank zugreifen.");
-                return null;
-            }
-            // Pfad: /artifacts/{appId}/users/{userId}/familyTree
-            return ref(db, `artifacts/${appId}/users/${userId}/familyTree`);
-        }
-
-        function listenForFamilyData() {
-            const familyRef = getFamilyRef();
-            if (!familyRef) return;
-
-            loadingSpinner.classList.add('active');
-            onValue(familyRef, (snapshot) => {
-                familyMembers = {}; // Vor dem Aktualisieren leeren
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.keys(data).forEach(key => {
-                        familyMembers[key] = { id: key, ...data[key] };
-                    });
-                    noDataMessage.classList.add('hidden');
+            // ---------- Einzelstream + Moderator ----------
+            function loadSingleStream() {
+                const url = document.getElementById('singleStreamUrl').value;
+                const video = document.getElementById('singleVideo');
+                const modName = document.getElementById('moderatorName').value;
+                // Alte HLS-Instanz zerstören
+                hlsInstances.forEach(hls => hls.destroy());
+                hlsInstances = [];
+                if (url.includes('.m3u8') && Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hlsInstances.push(hls);
                 } else {
-                    noDataMessage.classList.remove('hidden');
+                    video.src = url;
                 }
-                renderFamilyTree(currentSearchQuery); // Baum mit aktuellem Suchfilter neu rendern
-                loadingSpinner.classList.remove('active');
-            }, (error) => {
-                console.error("Fehler beim Abrufen der Familiendaten:", error);
-                showModalMessage("Datenfehler", `Fehler beim Laden der Familiendaten: ${error.message}`);
-                loadingSpinner.classList.remove('active');
-            });
-        }
-
-        async function addOrUpdatePerson(personData) {
-            const familyRef = getFamilyRef();
-            if (!familyRef) return;
-
-            loadingSpinner.classList.add('active');
-            try {
-                const oldSpouseId = editingPersonId ? familyMembers[editingPersonId]?.spouseId : null;
-
-                if (editingPersonId) {
-                    await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${editingPersonId}`), personData);
-
-                    if (oldSpouseId && oldSpouseId !== personData.spouseId) {
-                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${oldSpouseId}`), { spouseId: '' });
-                    }
-                    if (personData.spouseId && personData.spouseId !== editingPersonId) {
-                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: editingPersonId });
-                    }
-
-                    console.log("Person erfolgreich aktualisiert:", editingPersonId);
+                video.play().catch(e => console.log('Autoplay verhindert'));
+                const modDiv = document.getElementById('moderatorOverlay');
+                if (modName) {
+                    modDiv.innerText = `🎙️ ${modName}`;
+                    modDiv.style.display = 'block';
                 } else {
-                    const newPersonRef = push(familyRef);
-                    await set(newPersonRef, personData);
-
-                    if (personData.spouseId) {
-                        await update(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personData.spouseId}`), { spouseId: newPersonRef.key });
-                    }
-                    console.log("Neue Person erfolgreich hinzugefügt:", newPersonRef.key);
+                    modDiv.style.display = 'none';
                 }
-                closePersonModal();
-            } catch (error) {
-                console.error("Fehler beim Speichern der Person:", error);
-                showModalMessage("Speicherfehler", `Fehler beim Speichern der Person: ${error.message}`);
-            } finally {
-                loadingSpinner.classList.remove('active');
-            }
-        }
-
-        async function deletePerson(personId) {
-            const familyRef = getFamilyRef();
-            if (!familyRef) return;
-
-            loadingSpinner.classList.add('active');
-            try {
-                const personToDelete = familyMembers[personId];
-
-                const updates = {};
-                Object.values(familyMembers).forEach(member => {
-                    if (member.parent1 === personId) {
-                        updates[`${member.id}/parent1`] = '';
-                    }
-                    if (member.parent2 === personId) {
-                        updates[`${member.id}/parent2`] = '';
-                    }
-                    if (member.spouseId === personId) {
-                        updates[`${member.id}/spouseId`] = '';
-                    }
-                });
-
-                if (personToDelete && personToDelete.spouseId) {
-                    updates[`${personToDelete.spouseId}/spouseId`] = '';
-                }
-
-                if (Object.keys(updates).length > 0) {
-                    await update(familyRef, updates);
-                }
-
-                await remove(ref(db, `artifacts/${appId}/users/${userId}/familyTree/${personId}`));
-                console.log("Person erfolgreich gelöscht:", personId);
-                closeConfirmModal();
-            } catch (error) {
-                console.error("Fehler beim Löschen der Person:", error);
-                showModalMessage("Löschfehler", `Fehler beim Löschen der Person: ${error.message}`);
-            } finally {
-                loadingSpinner.classList.remove('active');
-            }
-        }
-
-        // --- D3.js Visualisierung ---
-        function renderFamilyTree(searchQuery = '') {
-            familyTreeDisplay.innerHTML = ''; // Vor dem Neuzeichnen leeren
-            const membersArray = Object.values(familyMembers);
-
-            if (membersArray.length === 0) {
-                noDataMessage.classList.remove('hidden');
-                return;
-            } else {
-                noDataMessage.classList.add('hidden');
             }
 
-            const highlightedPersonIds = new Set(membersArray
-                .filter(person => person.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map(person => person.id));
-
-            const rootCandidates = membersArray.filter(p => !p.parent1 && !p.parent2);
-
-            let treeData;
-            if (rootCandidates.length === 0 && membersArray.length > 0) {
-                treeData = { id: "artificial-root", name: "Familienbaum", children: membersArray.map(p => buildTreeData(p.id)) };
-            } else if (rootCandidates.length === 1) {
-                treeData = buildTreeData(rootCandidates[0].id);
-            } else if (rootCandidates.length > 1) {
-                treeData = {
-                    id: "super-root",
-                    name: "Gesamter Familienbaum",
-                    children: rootCandidates.map(p => buildTreeData(p.id))
-                };
-            } else {
-                noDataMessage.classList.remove('hidden');
-                return;
+            // ---------- Intros ----------
+            function playIntro(blob) {
+                if (!blob) return;
+                const overlay = document.getElementById('introOverlay');
+                const video = document.getElementById('introVideo');
+                video.src = URL.createObjectURL(blob);
+                overlay.style.display = 'flex';
+                video.onended = () => { overlay.style.display = 'none'; };
+                video.play();
             }
 
-            function buildTreeData(personId) {
-                const person = familyMembers[personId];
-                if (!person) return null;
-
-                const children = membersArray.filter(p => p.parent1 === personId || p.parent2 === personId);
-                return {
-                    id: person.id,
-                    name: person.name,
-                    maidenName: person.maidenName, // Neu
-                    birthDate: person.birthDate,
-                    placeOfBirth: person.placeOfBirth, // Neu
-                    dateOfDeath: person.dateOfDeath,     // Neu
-                    placeOfDeath: person.placeOfDeath,   // Neu
-                    gender: person.gender,
-                    spouseId: person.spouseId,
-                    occupation: person.occupation,       // Neu
-                    email: person.email,                 // Neu
-                    phone: person.phone,                 // Neu
-                    address: person.address,             // Neu
-                    profileImageUrl: person.profileImageUrl, // Neu
-                    notes: person.notes,                 // Neu
-                    _children: null,
-                    children: children.map(c => buildTreeData(c.id)).filter(Boolean)
-                };
+            // ---------- Moduswechsel ----------
+            function setMode(mode) {
+                currentMode = mode;
+                document.getElementById('scheduleMode').style.display = (mode === 'schedule') ? 'block' : 'none';
+                document.getElementById('multiviewMode').style.display = (mode === 'multiview') ? 'block' : 'none';
+                document.getElementById('singleStreamMode').style.display = (mode === 'single') ? 'block' : 'none';
+                document.getElementById('endcardMode').style.display = (mode === 'endcard') ? 'block' : 'none';
+                const modeNames = { schedule: '📋 Schedule', multiview: '📺 Multiview', single: '🎥 Single Stream', endcard: '🏁 Endcard' };
+                document.getElementById('modeIndicator').innerText = modeNames[mode] || '';
+                if (mode === 'multiview') setupMultiview();
             }
 
-            const containerWidth = familyTreeDisplay.clientWidth;
-            const estimatedDepth = d3.max(Object.values(familyMembers), d => {
-                let depth = 0;
-                let current = d;
-                while (current && (current.parent1 || current.parent2)) {
-                    depth++;
-                    current = familyMembers[current.parent1 || current.parent2];
-                }
-                return depth;
-            });
-            height = Math.max(400, (estimatedDepth + 1) * 120); // Angepasster Knotenabstand
-            width = containerWidth - margin.left - margin.right;
-            if (width < 300) width = 300;
-
-            svg = d3.select("#family-tree-display").append("svg")
-                .attr("width", containerWidth)
-                .attr("height", height + margin.top + margin.bottom)
-                .attr("viewBox", `0 0 ${containerWidth} ${height + margin.top + margin.bottom}`)
-                .attr("preserveAspectRatio", "xMidYMid meet");
-
-            g = svg.append("g")
-                .attr("transform", `translate(${margin.left + width / 2},${margin.top})`);
-
-            treeLayout = d3.tree().size([width, height]);
-
-            const root = d3.hierarchy(treeData);
-
-            function updateTree(source) {
-                const treeNodes = treeLayout(root);
-                const nodes = treeNodes.descendants().filter(d => d.data.id !== "super-root" && d.data.id !== "artificial-root");
-                const links = treeNodes.links();
-
-                nodes.forEach(d => { d.y = d.depth * 120; }); // Angepasster vertikaler Abstand
-
-                const link = g.selectAll(".link")
-                    .data(links, d => d.target.id);
-
-                const linkEnter = link.enter().append("path", "g")
-                    .attr("class", "link")
-                    .attr("d", d3.linkVertical()
-                        .x(source.x0 || source.x)
-                        .y(source.y0 || source.y));
-
-                link.merge(linkEnter).transition()
-                    .duration(500)
-                    .attr("d", d3.linkVertical()
-                        .x(d => d.x)
-                        .y(d => d.y));
-
-                link.exit().transition()
-                    .duration(500)
-                    .attr("d", d3.linkVertical()
-                        .x(d => source.x)
-                        .y(d => source.y))
-                    .remove();
-
-                const node = g.selectAll(".node")
-                    .data(nodes, d => d.id);
-
-                const nodeEnter = node.enter().append("g")
-                    .attr("class", d => `node ${d.children ? "node--internal" : "node--leaf"} ${highlightedPersonIds.has(d.data.id) ? 'highlighted' : ''}`)
-                    .attr("transform", d => `translate(${source.x0 || source.x},${source.y0 || source.y})`);
-
-                nodeEnter.append("circle")
-                    .attr("r", nodeRadius)
-                    .on("click", (event, d) => {
-                        // Verhindert das Ein-/Ausklappen bei Klick auf den Kreis, wenn Buttons vorhanden sind
-                        // Stattdessen wird nur der Tooltip angezeigt oder das Modal geöffnet, wenn kein Button geklickt wird.
-                    });
-
-                nodeEnter.append("text")
-                    .attr("dy", textOffset - 15) // Name etwas höher positionieren
-                    .text(d => d.data.name);
-
-                // ForeignObject für Buttons und Info
-                nodeEnter.append("foreignObject")
-                    .attr("x", -nodeRadius)
-                    .attr("y", nodeRadius + 5) // Unterhalb des Namens
-                    .attr("width", nodeRadius * 2)
-                    .attr("height", 60) // Mehr Platz für Buttons
-                    .html(d => `
-                        <div class="flex flex-col items-center justify-center gap-1 text-xs">
-                            <div class="flex gap-1">
-                                <button class="edit-btn text-white bg-indigo-400 hover:bg-indigo-500 rounded-md px-2 py-1" data-id="${d.data.id}" title="Bearbeiten">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="delete-btn text-white bg-red-500 hover:bg-red-600 rounded-md px-2 py-1" data-id="${d.data.id}" title="Löschen">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                            ${(d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? `<button class="toggle-btn text-white bg-slate-500 hover:bg-slate-600 rounded-md px-2 py-1 mt-1" title="${d._children ? 'Erweitern' : 'Einklappen'}">
-                                <i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i> ${d._children ? 'Erweitern' : 'Einklappen'}
-                            </button>` : ''}
-                            <button class="add-child-btn text-white bg-green-500 hover:bg-green-600 rounded-md px-2 py-1 mt-1" data-id="${d.data.id}" title="Kind hinzufügen">
-                                <i class="fas fa-child"></i> Kind hinzufügen
-                            </button>
-                        </div>
-                    `);
-
-                // Tooltips hinzufügen
-                nodeEnter.on("mouseover", function(event, d) {
-                    tooltip.style("opacity", 1)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px")
-                        .html(`
-                            <p><strong>Name:</strong> ${d.data.name}</p>
-                            ${d.data.maidenName ? `<p><strong>Mädchenname:</strong> ${d.data.maidenName}</p>` : ''}
-                            <p><strong>Geschlecht:</strong> ${getGenderDisplay(d.data.gender)}</p>
-                            ${d.data.birthDate ? `<p><strong>Geburtsdatum:</strong> ${formatDate(d.data.birthDate)}</p>` : ''}
-                            ${d.data.placeOfBirth ? `<p><strong>Geburtsort:</strong> ${d.data.placeOfBirth}</p>` : ''}
-                            ${d.data.dateOfDeath ? `<p><strong>Sterbedatum:</strong> ${formatDate(d.data.dateOfDeath)}</p>` : ''}
-                            ${d.data.placeOfDeath ? `<p><strong>Sterbeort:</strong> ${d.data.placeOfDeath}</p>` : ''}
-                            ${d.data.spouseId ? `<p><strong>Ehepartner:</strong> ${familyMembers[d.data.spouseId]?.name || 'Unbekannt'}</p>` : ''}
-                            ${(d.data.parent1 || d.data.parent2) ? `<p><strong>Eltern:</strong> ${familyMembers[d.data.parent1]?.name || 'N/A'} & ${familyMembers[d.data.parent2]?.name || 'N/A'}</p>` : ''}
-                            ${d.data.occupation ? `<p><strong>Beruf:</strong> ${d.data.occupation}</p>` : ''}
-                            ${d.data.email ? `<p><strong>E-Mail:</strong> ${d.data.email}</p>` : ''}
-                            ${d.data.phone ? `<p><strong>Telefon:</strong> ${d.data.phone}</p>` : ''}
-                            ${d.data.address ? `<p><strong>Adresse:</strong> ${d.data.address}</p>` : ''}
-                            ${d.data.notes ? `<p><strong>Notizen:</strong> ${d.data.notes}</p>` : ''}
-                            ${d.data.profileImageUrl ? `<p><strong>Profilbild:</strong> <img src="${d.data.profileImageUrl}" alt="Profilbild" style="width:50px;height:50px;border-radius:50%;object-fit:cover;margin-top:5px;"></p>` : ''}
-                        `);
-                })
-                .on("mouseout", function() {
-                    tooltip.style("opacity", 0);
-                });
-
-
-                const nodeUpdate = node.merge(nodeEnter).transition()
-                    .duration(500)
-                    .attr("transform", d => `translate(${d.x},${d.y})`);
-
-                nodeUpdate.select("circle")
-                    .attr("r", nodeRadius)
-                    .attr("class", d => highlightedPersonIds.has(d.data.id) ? 'highlighted' : '');
-
-                nodeUpdate.select("text")
-                    .text(d => d.data.name);
-
-                nodeUpdate.select("foreignObject").select(".toggle-btn")
-                    .html(d => `<i class="fas ${d._children ? 'fa-plus' : 'fa-minus'}"></i> ${d._children ? 'Erweitern' : 'Einklappen'}`)
-                    .attr("title", d => d._children ? 'Erweitern' : 'Einklappen')
-                    .style("display", d => (d.data.children && d.data.children.length > 0) || (d.data._children && d.data._children.length > 0) ? 'inline-flex' : 'none');
-
-
-                const nodeExit = node.exit().transition()
-                    .duration(500)
-                    .attr("transform", d => `translate(${source.x},${source.y})`)
-                    .remove();
-
-                nodeExit.select("circle")
-                    .attr("r", 0);
-
-                nodeExit.select("text")
-                    .style("fill-opacity", 0);
-
-                nodes.forEach(d => {
-                    d.x0 = d.x;
-                    d.y0 = d.y;
-                });
-
-                svg.selectAll(".edit-btn").on("click", function(event) {
-                    event.stopPropagation();
-                    const id = d3.select(this).attr("data-id");
-                    openPersonModalForEdit(id);
-                });
-
-                svg.selectAll(".delete-btn").on("click", function(event) {
-                    event.stopPropagation();
-                    const id = d3.select(this).attr("data-id");
-                    openConfirmModal(id);
-                });
-
-                svg.selectAll(".toggle-btn").on("click", function(event, d) {
-                    event.stopPropagation();
-                    toggleNode(event, d);
-                });
-
-                svg.selectAll(".add-child-btn").on("click", function(event) {
-                    event.stopPropagation();
-                    const parentId = d3.select(this).attr("data-id");
-                    openPersonModalForAddWithParent(parentId);
-                });
-
-                drawSpouseLinks(nodes);
-            }
-
-            function toggleNode(event, d) {
-                if (d.data.id === "super-root" || d.data.id === "artificial-root") return;
-
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
+            // ---------- Präsentationsmodus ----------
+            function togglePresentation() {
+                document.body.classList.toggle('presentation-mode');
+                const overlay = document.getElementById('overlay');
+                if (document.body.classList.contains('presentation-mode')) {
+                    overlay.classList.add('hidden');
                 } else {
-                    d.children = d._children;
-                    d._children = null;
+                    overlay.classList.remove('hidden');
                 }
-                updateTree(d);
             }
 
-            function drawSpouseLinks(nodes) {
-                g.selectAll(".spouse-link").remove();
+            function toggleOverlay() {
+                if (!document.body.classList.contains('presentation-mode')) return;
+                const overlay = document.getElementById('overlay');
+                overlay.classList.toggle('hidden');
+            }
 
-                const spouseLinks = [];
-                const nodeMap = new Map(nodes.map(d => [d.data.id, d]));
+            // ---------- Event Listener ----------
+            document.addEventListener('DOMContentLoaded', () => {
+                // Datei-Uploads
+                document.getElementById('loadScheduleBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            allEntries = parseTextFileContent(ev.target.result);
+                            currentPage = 0; highlightIndex = 0;
+                            renderSchedule();
+                        };
+                        reader.readAsText(file);
+                    }
+                });
 
-                Object.values(familyMembers).forEach(person => {
-                    if (person.spouseId && nodeMap.has(person.id) && nodeMap.has(person.spouseId)) {
-                        const personNode = nodeMap.get(person.id);
-                        const spouseNode = nodeMap.get(person.spouseId);
+                document.getElementById('loadIntro1Btn').addEventListener('click', () => document.getElementById('intro1Input').click());
+                document.getElementById('intro1Input').addEventListener('change', (e) => {
+                    intro1Blob = e.target.files[0];
+                });
+                document.getElementById('loadIntro2Btn').addEventListener('click', () => document.getElementById('intro2Input').click());
+                document.getElementById('intro2Input').addEventListener('change', (e) => {
+                    intro2Blob = e.target.files[0];
+                });
 
-                        if (person.id < person.spouseId) {
-                            spouseLinks.push({
-                                source: personNode,
-                                target: spouseNode
-                            });
+                document.getElementById('loadBgBtn').addEventListener('click', () => document.getElementById('bgImageInput').click());
+                document.getElementById('bgImageInput').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            document.getElementById('bgImageContainer').style.backgroundImage = `url('${ev.target.result}')`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                document.getElementById('loadSingleStream').addEventListener('click', loadSingleStream);
+
+                // Hotkeys
+                window.addEventListener('keydown', (e) => {
+                    if (['1','2','3','4','I','J',' ','Control'].includes(e.key)) e.preventDefault();
+                    if (e.key === '1') setMode('schedule');
+                    else if (e.key === '2') setMode('multiview');
+                    else if (e.key === '3') setMode('single');
+                    else if (e.key === '4') setMode('endcard');
+                    else if (e.key === 'I' && intro1Blob) playIntro(intro1Blob);
+                    else if (e.key === 'J' && intro2Blob) playIntro(intro2Blob);
+                    else if (e.key === ' ') toggleOverlay();
+                    else if (e.key === 'Control') togglePresentation();
+
+                    // Pfeiltasten nur im Schedule-Modus
+                    if (currentMode === 'schedule') {
+                        if (e.key === 'ArrowUp') {
+                            if (highlightIndex > 0) highlightIndex--;
+                            else if (currentPage > 0) { currentPage--; highlightIndex = pageSize-1; }
+                            renderSchedule();
+                        } else if (e.key === 'ArrowDown') {
+                            const pageEntries = allEntries.slice(currentPage*pageSize, currentPage*pageSize+pageSize);
+                            if (highlightIndex < pageEntries.length-1) highlightIndex++;
+                            else if (currentPage < Math.ceil(allEntries.length/pageSize)-1) { currentPage++; highlightIndex = 0; }
+                            renderSchedule();
+                        } else if (e.key === 'ArrowLeft') {
+                            if (currentPage > 0) { currentPage--; highlightIndex = 0; renderSchedule(); }
+                        } else if (e.key === 'ArrowRight') {
+                            if (currentPage < Math.ceil(allEntries.length/pageSize)-1) { currentPage++; highlightIndex = 0; renderSchedule(); }
                         }
                     }
                 });
 
-                g.selectAll(".spouse-link")
-                    .data(spouseLinks)
-                    .enter().append("line")
-                    .attr("class", "spouse-link")
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y - nodeRadius)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y - nodeRadius);
-            }
-
-            updateTree(root);
-
-            const zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on("zoom", (event) => {
-                    g.attr("transform", event.transform);
+                // Klick auf Schedule-Item
+                document.addEventListener('click', (e) => {
+                    const item = e.target.closest('.schedule-item');
+                    if (item && currentMode === 'schedule') {
+                        highlightIndex = parseInt(item.dataset.index);
+                        renderSchedule();
+                    }
                 });
-            svg.call(zoom);
-        }
 
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            try {
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                return new Date(dateString).toLocaleDateString('de-DE', options);
-            } catch (e) {
-                return dateString;
-            }
-        }
-
-        function getGenderDisplay(gender) {
-            switch (gender) {
-                case 'male': return 'Männlich';
-                case 'female': return 'Weiblich';
-                case 'other': return 'Andere';
-                default: return 'N/A';
-            }
-        }
-
-        function populateSelects(currentPersonId = null) {
-            parent1Select.innerHTML = '<option value="">Kein Elternteil</option>';
-            parent2Select.innerHTML = '<option value="">Kein Elternteil</option>';
-            spouseSelect.innerHTML = '<option value="">Kein Ehepartner</option>';
-
-            Object.values(familyMembers).forEach(person => {
-                if (person.id !== currentPersonId) {
-                    const option1 = document.createElement('option');
-                    option1.value = person.id;
-                    option1.textContent = person.name;
-                    parent1Select.appendChild(option1);
-
-                    const option2 = document.createElement('option');
-                    option2.value = person.id;
-                    option2.textContent = person.name;
-                    parent2Select.appendChild(option2);
-
-                    const spouseOption = document.createElement('option');
-                    spouseOption.value = person.id;
-                    spouseOption.textContent = person.name;
-                    spouseSelect.appendChild(spouseOption);
-                }
+                // Initialisierung
+                allEntries = sampleData.map(line => {
+                    const parts = line.split('|');
+                    return { day: parts[0], time: parts[1], en: parts[2], bs: parts[3], type: parts[4] };
+                });
+                renderSchedule();
+                setMode('schedule');
+                setupMultiview(); // Vorbereiten
             });
-        }
-
-        // --- Modal-Funktionen ---
-        function openPersonModalForAdd() {
-            modalTitle.textContent = 'Person hinzufügen';
-            personForm.reset();
-            editingPersonId = null;
-            populateSelects();
-            personModal.classList.add('open');
-        }
-
-        // Neue Funktion: Person hinzufügen mit vorausgewähltem Elternteil
-        function openPersonModalForAddWithParent(parentId) {
-            openPersonModalForAdd(); // Öffnet das normale Hinzufügen-Modal
-            // Setzt den ersten Elternteil auf die übergebene ID
-            if (familyMembers[parentId]) {
-                parent1Select.value = parentId;
-            }
-            modalTitle.textContent = 'Kind hinzufügen'; // Angepasster Titel
-        }
-
-
-        function openPersonModalForEdit(id) {
-            const person = familyMembers[id];
-            if (!person) {
-                showModalMessage("Fehler", "Person nicht gefunden.");
-                return;
-            }
-            modalTitle.textContent = 'Person bearbeiten';
-            nameInput.value = person.name;
-            maidenNameInput.value = person.maidenName || ''; // Neu
-            birthDateInput.value = person.birthDate || '';
-            placeOfBirthInput.value = person.placeOfBirth || ''; // Neu
-            dateOfDeathInput.value = person.dateOfDeath || '';     // Neu
-            placeOfDeathInput.value = person.placeOfDeath || '';   // Neu
-            genderSelect.value = person.gender || '';
-            occupationInput.value = person.occupation || '';       // Neu
-            emailInput.value = person.email || '';                 // Neu
-            phoneInput.value = person.phone || '';                 // Neu
-            addressInput.value = person.address || '';             // Neu
-            profileImageUrlInput.value = person.profileImageUrl || ''; // Neu
-            notesInput.value = person.notes || '';                 // Neu
-
-            editingPersonId = id;
-            populateSelects(id);
-
-            if (person.parent1) {
-                parent1Select.value = person.parent1;
-            }
-            if (person.parent2) {
-                parent2Select.value = person.parent2;
-            }
-            if (person.spouseId) {
-                spouseSelect.value = person.spouseId;
-            }
-
-            personModal.classList.add('open');
-        }
-
-        function closePersonModal() {
-            personModal.classList.remove('open');
-            personForm.reset();
-            editingPersonId = null;
-        }
-
-        function openConfirmModal(id) {
-            deletingPersonId = id;
-            const person = familyMembers[id];
-            if (person) {
-                confirmPersonName.textContent = person.name;
-            } else {
-                confirmPersonName.textContent = 'diese Person';
-            }
-            confirmModal.classList.add('open');
-        }
-
-        function closeConfirmModal() {
-            confirmModal.classList.remove('open');
-            deletingPersonId = null;
-        }
-
-        function showModalMessage(title, message) {
-            messageModalTitle.textContent = title;
-            messageModalText.textContent = message;
-            messageModal.classList.add('open');
-        }
-
-        closeMessageModalBtn.addEventListener('click', () => {
-            messageModal.classList.remove('open');
-        });
-
-        // --- Suchfunktion ---
-        searchInput.addEventListener('input', (e) => {
-            currentSearchQuery = e.target.value.trim();
-            renderFamilyTree(currentSearchQuery);
-        });
-
-        // --- Exportfunktion ---
-        exportDataBtn.addEventListener('click', () => {
-            if (Object.keys(familyMembers).length === 0) {
-                showModalMessage("Export fehlgeschlagen", "Es sind keine Daten zum Exportieren vorhanden.");
-                return;
-            }
-            const dataStr = JSON.stringify(familyMembers, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `familienbaum_${userId}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showModalMessage("Export erfolgreich", "Ihre Familiendaten wurden als JSON-Datei exportiert.");
-        });
-
-        // --- Importfunktion ---
-        importDataBtn.addEventListener('click', () => {
-            importFileInput.click();
-        });
-
-        importFileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (typeof importedData !== 'object' || importedData === null) {
-                        showModalMessage("Import fehlgeschlagen", "Die importierte Datei ist kein gültiges JSON-Objekt.");
-                        return;
-                    }
-
-                    loadingSpinner.classList.add('active');
-                    const familyRef = getFamilyRef();
-                    if (!familyRef) {
-                        loadingSpinner.classList.remove('active');
-                        return;
-                    }
-
-                    await set(familyRef, importedData);
-                    showModalMessage("Import erfolgreich", "Ihre Familiendaten wurden erfolgreich importiert.");
-                } catch (error) {
-                    console.error("Fehler beim Importieren der Daten:", error);
-                    showModalMessage("Import fehlgeschlagen", `Fehler beim Importieren der Daten: ${error.message}`);
-                } finally {
-                    loadingSpinner.classList.remove('active');
-                    importFileInput.value = '';
-                }
-            };
-            reader.readAsText(file);
-        });
-
-
-        // --- Event-Listener ---
-        addPersonBtn.addEventListener('click', openPersonModalForAdd);
-        cancelBtn.addEventListener('click', closePersonModal);
-        cancelDeleteBtn.addEventListener('click', closeConfirmModal);
-
-        personForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = nameInput.value.trim();
-            const maidenName = maidenNameInput.value.trim(); // Neu
-            const birthDate = birthDateInput.value;
-            const placeOfBirth = placeOfBirthInput.value.trim(); // Neu
-            const dateOfDeath = dateOfDeathInput.value;           // Neu
-            const placeOfDeath = placeOfDeathInput.value.trim();  // Neu
-            const gender = genderSelect.value;
-            const parent1 = parent1Select.value || '';
-            const parent2 = parent2Select.value || '';
-            const spouseId = spouseSelect.value || '';
-            const occupation = occupationInput.value.trim();      // Neu
-            const email = emailInput.value.trim();                // Neu
-            const phone = phoneInput.value.trim();                // Neu
-            const address = addressInput.value.trim();            // Neu
-            const profileImageUrl = profileImageUrlInput.value.trim(); // Neu
-            const notes = notesInput.value.trim();                // Neu
-
-            if (!name || !gender) {
-                showModalMessage("Fehler", "Name und Geschlecht sind Pflichtfelder.");
-                return;
-            }
-
-            if (editingPersonId) {
-                if (parent1 === editingPersonId || parent2 === editingPersonId || spouseId === editingPersonId) {
-                    showModalMessage("Fehler", "Eine Person kann nicht ihr eigener Elternteil oder Ehepartner sein.");
-                    return;
-                }
-            }
-
-            if (parent1 && parent2 && parent1 === parent2) {
-                showModalMessage("Fehler", "Elternteil 1 und Elternteil 2 können nicht dieselbe Person sein.");
-                return;
-            }
-
-            const personData = {
-                name,
-                maidenName, // Neu
-                birthDate,
-                placeOfBirth, // Neu
-                dateOfDeath,     // Neu
-                placeOfDeath,   // Neu
-                gender,
-                parent1,
-                parent2,
-                spouseId,
-                occupation,       // Neu
-                email,                // Neu
-                phone,                // Neu
-                address,             // Neu
-                profileImageUrl, // Neu
-                notes                 // Neu
-            };
-            addOrUpdatePerson(personData);
-        });
-
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (deletingPersonId) {
-                deletePerson(deletingPersonId);
-            }
-        });
-
-        // Modale schließen bei Klick außerhalb des Inhalts
-        personModal.addEventListener('click', (e) => {
-            if (e.target === personModal) {
-                closePersonModal();
-            }
-        });
-        confirmModal.addEventListener('click', (e) => {
-            if (e.target === confirmModal) {
-                closeConfirmModal();
-            }
-        });
-        messageModal.addEventListener('click', (e) => {
-            if (e.target === messageModal) {
-                messageModal.classList.remove('open');
-            }
-        });
-
-        // Initialisierung beim Laden des Fensters
-        window.onload = initializeFirebase;
+        })();
     </script>
 </body>
 </html>
