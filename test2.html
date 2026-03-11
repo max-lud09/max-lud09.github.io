@@ -1,1 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast Suite · Milano Cortina 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: #12151f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow: hidden; /* Verhindert Scrollen im TV-Feed */
+        }
+
+        /* TV SAFE ZONE (16:9 Aspect Ratio Container) */
+        .broadcast-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-image: url('https://max-lud09.github.io/videos/Background.jpg');
+            background-size: cover;
+            background-position: center;
+            transition: opacity 0.5s ease;
+        }
+
+        /* PRÄSENTATIONSMODUS (Clean Feed) */
+        body.presentation-mode .broadcast-container {
+            background-image: none;
+            background-color: #000; /* Reines Schwarz für den Mischer (oder #00FF00 für Greenscreen) */
+        }
+        body.presentation-mode .ui-controls {
+            display: none;
+        }
+
+        /* --- UI CONTROLS (Nur sichtbar für den Operator) --- */
+        .ui-controls {
+            position: absolute;
+            top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+            padding: 15px 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
+            z-index: 100; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
+            width: 90%; max-width: 1200px;
+        }
+        .btn {
+            background: #2c3e50; color: white; border: none; border-radius: 8px;
+            padding: 10px 20px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn:hover { background: #34495e; transform: translateY(-2px); }
+        .btn.highlight { background: #c02f2f; }
+        .btn.ad { background: #f39c12; color: #000; }
+
+        /* --- BROADCAST GRAPHICS (Animations & Core Styles) --- */
+        .graphic-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 10;
+        }
+        .graphic-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+
+        .glass-panel {
+            background: rgba(20, 25, 40, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+            transform: translateY(40px) scale(0.98);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .graphic-overlay.active .glass-panel {
+            transform: translateY(0) scale(1);
+        }
+
+        /* --- 1. SCHEDULE OVERLAY --- */
+        .schedule-box {
+            width: 1200px; padding: 40px; border-top: 5px solid #c02f2f;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .header img { height: 70px; }
+        .day-badge { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; color: #fff; text-transform: uppercase; }
+        
+        .schedule-list { display: flex; flex-direction: column; gap: 12px; }
+        .schedule-item {
+            display: flex; align-items: center; gap: 20px;
+            background: rgba(255,255,255,0.03); padding: 15px 25px; border-radius: 12px;
+            border-left: 4px solid transparent; transition: 0.3s;
+        }
+        .schedule-item.live-highlight {
+            background: linear-gradient(90deg, rgba(192,47,47,0.2) 0%, rgba(20,25,40,0) 100%);
+            border-left: 4px solid #c02f2f;
+        }
+        .time { font-size: 2.2rem; font-weight: 900; color: #f39c12; width: 140px; }
+        .event-info { flex: 1; }
+        .event-name { font-size: 1.6rem; font-weight: 600; }
+        .event-name-bs { font-size: 1.2rem; color: #aaa; margin-top: 4px; }
+        .badge { padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .badge.live { background: #c02f2f; } .badge.news { background: #03a750; } .badge.studio { background: #8e44ad; }
+
+        /* --- 2. MEDAL TABLE OVERLAY (NEU) --- */
+        .medal-box {
+            width: 1000px; padding: 40px; border-top: 5px solid #f1c40f;
+        }
+        .medal-title { font-size: 2.5rem; font-weight: 900; text-align: center; margin-bottom: 30px; letter-spacing: 3px; text-transform: uppercase; }
+        .medal-grid { width: 100%; border-collapse: collapse; text-align: center; }
+        .medal-grid th { font-size: 1.2rem; color: #aaa; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.1); font-weight: 600; text-transform: uppercase; }
+        .medal-grid td { padding: 18px 10px; font-size: 1.8rem; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .medal-grid tr:last-child td { border-bottom: none; }
+        .country-col { text-align: left; display: flex; align-items: center; gap: 15px; }
+        .medal-icon { width: 30px; height: 30px; border-radius: 50%; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .gold { background: radial-gradient(circle, #f1c40f, #d4ac0d); }
+        .silver { background: radial-gradient(circle, #bdc3c7, #95a5a6); }
+        .bronze { background: radial-gradient(circle, #cd7f32, #a0522d); }
+        .total { font-weight: 900; color: #fff; }
+        .highlight-row { background: rgba(192,47,47,0.15); border-radius: 10px; }
+        .highlight-row td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        .highlight-row td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+        /* --- 3. SLATES (WERBUNG & ENDE) --- */
+        .slate-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1a1e2b 0%, #0a0c12 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+        .slate-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        /* Edle animierte Hintergrundlinien */
+        .bg-lines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 80px);
+            z-index: -1; animation: panLines 60s linear infinite;
+        }
+        @keyframes panLines { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
+
+        .slate-content { text-align: center; transform: scale(0.9); transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .slate-overlay.active .slate-content { transform: scale(1); }
+        
+        .slate-logos { display: flex; justify-content: center; align-items: center; gap: 50px; margin-bottom: 40px; }
+        .slate-logos img { height: 120px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+        
+        .slate-title { font-size: 5rem; font-weight: 900; letter-spacing: 5px; color: #fff; text-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-bottom: 10px; }
+        .slate-subtitle { font-size: 2rem; font-weight: 400; color: #aaa; letter-spacing: 10px; text-transform: uppercase; }
+        
+        /* Uhrzeit im End-Screen */
+        .live-clock { margin-top: 50px; font-size: 3.5rem; font-weight: 800; color: #f39c12; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(243, 156, 18, 0.4); }
+
+        /* --- VIDEO PLAYER --- */
+        .video-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 3000; display: none; justify-content: center; align-items: center;
+        }
+        .video-overlay.active { display: flex; }
+        .video-overlay video { width: 100%; height: 100%; object-fit: contain; }
+    </style>
+</head>
+<body>
+
+    <audio id="broadcastAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
+
+    <div class="ui-controls">
+        <label class="btn" style="cursor: pointer;">📄 Upload Schedule <input type="file" id="fileInput" accept=".txt" style="display:none;"></label>
+        <button class="btn highlight" id="btnPres">S - Presentation Mode</button>
+        <button class="btn" id="btnSched">Space - Schedule</button>
+        <button class="btn" id="btnMedal">M - Medals</button>
+        <button class="btn ad" id="btnAd">W - Start Ad</button>
+        <button class="btn ad" id="btnAdStop">X - Stop Ad</button>
+        <button class="btn highlight" id="btnEnd">E - Broadcast End</button>
+        <button class="btn" id="btnV1">1 - BHRT Intro</button>
+        <button class="btn" id="btnV2">2 - Para Intro</button>
+    </div>
+
+    <div class="broadcast-container" id="mainContainer">
+        
+        <div class="graphic-overlay" id="overlaySchedule">
+            <div class="glass-panel schedule-box">
+                <div class="header">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT">
+                    <div class="day-badge" id="dayDisplay">MILANO CORTINA 2026</div>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Paralympics">
+                </div>
+                <div class="schedule-list" id="scheduleList"></div>
+            </div>
+        </div>
+
+        <div class="graphic-overlay" id="overlayMedals">
+            <div class="glass-panel medal-box">
+                <div class="medal-title">Current Medal Standings</div>
+                <table class="medal-grid">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th style="text-align: left;">Nation</th>
+                            <th><div class="medal-icon gold"></div></th>
+                            <th><div class="medal-icon silver"></div></th>
+                            <th><div class="medal-icon bronze"></div></th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medalBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="slate-overlay" id="overlaySlate">
+        <div class="bg-lines"></div>
+        <div class="slate-content">
+            <div class="slate-logos">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Logo_of_BHRT_%281998-%29.svg" alt="BHRT">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/2026_Winter_Paralympics_logo.svg" alt="Paralympics">
+            </div>
+            <div class="slate-title" id="slateTitle">BROADCAST ENDED</div>
+            <div class="slate-subtitle" id="slateSubtitle">THANK YOU FOR WATCHING</div>
+            <div class="live-clock" id="liveClock" style="display: none;">00:00:00</div>
+        </div>
+    </div>
+
+    <div class="video-overlay" id="videoOverlay">
+        <video id="mainVideoPlayer"></video>
+    </div>
+    <div style="display:none;">
+        <video id="videoIntro1" src="https://max-lud09.github.io/videos/BHT.mp4"></video>
+        <video id="videoIntro2" src="https://max-lud09.github.io/videos/OBS.mp4"></video>
+    </div>
+
+    <script>
+        // --- 1. CLOCK API ---
+        let currentClock = new Date();
+        // Fetch time from WorldTimeAPI (Rome/Milano Timezone)
+        fetch('https://worldtimeapi.org/api/timezone/Europe/Rome')
+            .then(res => res.json())
+            .then(data => { currentClock = new Date(data.datetime); })
+            .catch(err => console.warn("API Clock fallback to local machine time."));
+
+        // Tick every second
+        setInterval(() => {
+            currentClock.setSeconds(currentClock.getSeconds() + 1);
+            document.getElementById('liveClock').innerText = currentClock.toLocaleTimeString('en-GB', { hour12: false });
+        }, 1000);
+
+        // --- 2. AUDIO PLAYER ---
+        const bgAudio = document.getElementById('broadcastAudio');
+        function playAudio() {
+            bgAudio.currentTime = 0;
+            bgAudio.play().catch(e => console.log("Audio play blocked by browser. Interact with page first."));
+        }
+        function stopAudio() {
+            bgAudio.pause();
+        }
+
+        // --- 3. MEDAL DATA (Mockup) ---
+        const medalData = [
+            { rank: 1, country: "ITA - Italy", gold: 12, silver: 8, bronze: 6 },
+            { rank: 2, country: "USA - United States", gold: 10, silver: 11, bronze: 9 },
+            { rank: 3, country: "CHN - China", gold: 9, silver: 7, bronze: 5 },
+            { rank: 4, country: "GBR - Great Britain", gold: 6, silver: 8, bronze: 8 },
+            { rank: 14, country: "BIH - Bosnia & Herz.", gold: 1, silver: 0, bronze: 1, highlight: true }
+        ];
+
+        function renderMedals() {
+            const tbody = document.getElementById('medalBody');
+            tbody.innerHTML = medalData.map(m => `
+                <tr class="${m.highlight ? 'highlight-row' : ''}">
+                    <td style="color: #aaa;">${m.rank}</td>
+                    <td class="country-col"><strong>${m.country}</strong></td>
+                    <td>${m.gold}</td>
+                    <td>${m.silver}</td>
+                    <td>${m.bronze}</td>
+                    <td class="total">${m.gold + m.silver + m.bronze}</td>
+                </tr>
+            `).join('');
+        }
+        renderMedals();
+
+        // --- 4. SCHEDULE LOGIC ---
+        let scheduleData = [
+            "DAY 2 – SUN 08 MAR 2026|08:15|Wheelchair Curling - Round Robin|studio",
+            "DAY 2 – SUN 08 MAR 2026|09:40|Para Alpine Skiing - Super-G|live",
+            "DAY 2 – SUN 08 MAR 2026|11:34|Para Biathlon - Sprint Finals|live",
+            "DAY 2 – SUN 08 MAR 2026|12:45|Studio Mid-Day Wrap|studio"
+        ];
+        let highlightIdx = 1;
+
+        function renderSchedule() {
+            const list = document.getElementById('scheduleList');
+            document.getElementById('dayDisplay').innerText = scheduleData[0]?.split('|')[0] || "SCHEDULE";
+            
+            list.innerHTML = scheduleData.slice(0, 5).map((line, idx) => {
+                const parts = line.split('|');
+                const isHl = idx === highlightIdx ? 'live-highlight' : '';
+                return `
+                    <div class="schedule-item ${isHl}">
+                        <div class="time">${parts[1]}</div>
+                        <div class="event-info"><div class="event-name">${parts[2]}</div></div>
+                        <div class="badge ${parts[3] || 'news'}">${parts[3] || 'INFO'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        renderSchedule();
+
+        // --- 5. OVERLAY MANAGERS ---
+        const ovSchedule = document.getElementById('overlaySchedule');
+        const ovMedals = document.getElementById('overlayMedals');
+        const ovSlate = document.getElementById('overlaySlate');
+        const clockUI = document.getElementById('liveClock');
+        
+        function hideAllOverlays() {
+            ovSchedule.classList.remove('active');
+            ovMedals.classList.remove('active');
+            ovSlate.classList.remove('active');
+        }
+
+        function toggleSchedule() {
+            const isActive = ovSchedule.classList.contains('active');
+            hideAllOverlays();
+            if (!isActive) ovSchedule.classList.add('active');
+        }
+
+        function toggleMedals() {
+            const isActive = ovMedals.classList.contains('active');
+            hideAllOverlays();
+            if (!isActive) ovMedals.classList.add('active');
+        }
+
+        function triggerSlate(type) {
+            hideAllOverlays();
+            const title = document.getElementById('slateTitle');
+            const sub = document.getElementById('slateSubtitle');
+            
+            if (type === 'END') {
+                title.innerText = "BROADCAST ENDED";
+                sub.innerText = "THANK YOU FOR WATCHING";
+                clockUI.style.display = "block"; // Uhr anzeigen
+                playAudio();
+                ovSlate.classList.add('active');
+            } else if (type === 'AD') {
+                title.innerText = "COMMERCIAL BREAK";
+                sub.innerText = "WE WILL BE RIGHT BACK";
+                clockUI.style.display = "none"; // Keine Uhr in Werbung
+                playAudio();
+                ovSlate.classList.add('active');
+            } else if (type === 'STOP') {
+                stopAudio();
+            }
+        }
+
+        // --- 6. PRESENTATION MODE ---
+        function togglePresentation() {
+            const body = document.body;
+            if (!body.classList.contains('presentation-mode')) {
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+                body.classList.add('presentation-mode');
+                hideAllOverlays(); // Startet sauber in Schwarz
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                body.classList.remove('presentation-mode');
+            }
+        }
+
+        // --- 7. VIDEO PLAYER ---
+        const videoOverlay = document.getElementById('videoOverlay');
+        const mainPlayer = document.getElementById('mainVideoPlayer');
+        
+        function playVid(id) {
+            hideAllOverlays();
+            stopAudio();
+            mainPlayer.src = document.getElementById(id).src;
+            videoOverlay.classList.add('active');
+            mainPlayer.play();
+        }
+        mainPlayer.addEventListener('ended', () => {
+            videoOverlay.classList.remove('active');
+            mainPlayer.src = "";
+        });
+
+        // --- 8. EVENT LISTENERS ---
+        window.addEventListener('keydown', e => {
+            const k = e.key.toLowerCase();
+            if (k === 's') togglePresentation();
+            else if (e.key === ' ') toggleSchedule();
+            else if (k === 'm') toggleMedals();
+            else if (k === 'w') triggerSlate('AD');
+            else if (k === 'x') triggerSlate('STOP');
+            else if (k === 'e') triggerSlate('END');
+            else if (k === '1') playVid('videoIntro1');
+            else if (k === '2') playVid('videoIntro2');
+            else if (e.key === 'ArrowDown') { highlightIdx = Math.min(4, highlightIdx + 1); renderSchedule(); }
+            else if (e.key === 'ArrowUp') { highlightIdx = Math.max(0, highlightIdx - 1); renderSchedule(); }
+        });
+
+        document.getElementById('btnPres').addEventListener('click', togglePresentation);
+        document.getElementById('btnSched').addEventListener('click', toggleSchedule);
+        document.getElementById('btnMedal').addEventListener('click', toggleMedals);
+        document.getElementById('btnAd').addEventListener('click', () => triggerSlate('AD'));
+        document.getElementById('btnAdStop').addEventListener('click', () => triggerSlate('STOP'));
+        document.getElementById('btnEnd').addEventListener('click', () => triggerSlate('END'));
+        document.getElementById('btnV1').addEventListener('click', () => playVid('videoIntro1'));
+        document.getElementById('btnV2').addEventListener('click', () => playVid('videoIntro2'));
+        
+        document.getElementById('fileInput').addEventListener('change', e => {
+            const r = new FileReader();
+            r.onload = ev => {
+                scheduleData = ev.target.result.split('\n').filter(l => l.trim()!=='');
+                highlightIdx = 0; renderSchedule();
+            };
+            if(e.target.files[0]) r.readAsText(e.target.files[0]);
+        });
+    </script>
+</body>
+</html>
