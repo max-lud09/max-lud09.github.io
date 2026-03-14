@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>BHRT Overlay Controller</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 20px;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #0a1a2f 0%, #1a2f3f 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .controller {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            padding: 40px 30px;
+            border: 2px solid #FCB131;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.7);
+        }
+        h1 {
+            text-align: center;
+            font-size: 48px;
+            margin: 0 0 20px;
+            background: linear-gradient(135deg, #0081C8, #FCB131, #EE334E, #00A651);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .sub {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 40px;
+            color: #ddd;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 60px;
+            padding: 20px 10px;
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+        }
+        button.primary {
+            background: #0081C8;
+            border-color: #FCB131;
+        }
+        button.special {
+            background: #EE334E;
+        }
+        button.end {
+            background: #2c3e50;
+        }
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 40px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        .section h2 {
+            font-size: 36px;
+            margin: 0 0 20px;
+            color: #FCB131;
+            border-left: 8px solid #EE334E;
+            padding-left: 20px;
+        }
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .input-row label {
+            font-size: 24px;
+            min-width: 140px;
+            color: #FCB131;
+        }
+        .input-row input {
+            flex: 1;
+            background: #1e2a3a;
+            border: 2px solid #3a4a5a;
+            border-radius: 60px;
+            padding: 15px 25px;
+            font-size: 24px;
+            color: white;
+            outline: none;
+        }
+        .input-row input:focus {
+            border-color: #FCB131;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stats-item {
+            background: #1e2a3a;
+            border-radius: 30px;
+            padding: 15px;
+        }
+        .stats-item label {
+            display: block;
+            font-size: 20px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .stats-item input {
+            width: 100%;
+            background: #0f1a24;
+            border: 2px solid #3a4a5a;
+            border-radius: 40px;
+            padding: 12px 18px;
+            font-size: 22px;
+            color: white;
+        }
+        .status {
+            margin-top: 30px;
+            font-size: 26px;
+            text-align: center;
+            background: #1e2a3a;
+            padding: 20px;
+            border-radius: 60px;
+            border-left: 10px solid #FCB131;
+        }
+        .note {
+            font-size: 24px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controller">
+        <h1>BHRT OVERLAY CONTROLLER</h1>
+        <div class="sub">Paralympic Broadcast · Milano Cortina 2026</div>
+
+        <div class="button-grid">
+            <button class="primary" id="btn-commentator">COMMENTATOR</button>
+            <button class="primary" id="btn-medal">MEDAL TABLE</button>
+            <button class="primary" id="btn-ad-start">AD START</button>
+            <button class="primary" id="btn-ad-end">AD END</button>
+            <button class="special" id="btn-song1">BELVEDERE</button>
+            <button class="special" id="btn-song2">MILANO CORTINA</button>
+            <button class="primary" id="btn-stats">STATISTICS</button>
+            <button class="end" id="btn-end">END SCREEN</button>
+            <button id="btn-hide">HIDE ALL</button>
+        </div>
+
+        <!-- Commentator section -->
+        <div class="section">
+            <h2>🎙️ Commentator</h2>
+            <div class="input-row">
+                <label>Name</label>
+                <input type="text" id="commentator-name" value="Max Alija Ludwig">
+            </div>
+            <div class="input-row">
+                <label>Title</label>
+                <input type="text" id="commentator-title" value="Special Guest">
+            </div>
+            <button class="primary" id="btn-update-commentator" style="width:100%;">UPDATE & SHOW</button>
+        </div>
+
+        <!-- Advertisement Start section -->
+        <div class="section">
+            <h2>📢 Ad Start</h2>
+            <div class="input-row">
+                <label>Title</label>
+                <input type="text" id="ad-start-title" value="START OF BLOCK">
+            </div>
+            <div class="input-row">
+                <label>Subtitle</label>
+                <input type="text" id="ad-start-subtitle" value="Advertisement">
+            </div>
+            <button class="primary" id="btn-update-ad-start" style="width:100%;">UPDATE & SHOW</button>
+        </div>
+
+        <!-- Advertisement End section -->
+        <div class="section">
+            <h2>📢 Ad End</h2>
+            <div class="input-row">
+                <label>Title</label>
+                <input type="text" id="ad-end-title" value="END OF BLOCK">
+            </div>
+            <div class="input-row">
+                <label>Subtitle</label>
+                <input type="text" id="ad-end-subtitle" value="We'll be right back">
+            </div>
+            <button class="primary" id="btn-update-ad-end" style="width:100%;">UPDATE & SHOW</button>
+        </div>
+
+        <!-- Song section (custom) -->
+        <div class="section">
+            <h2>🎵 Custom Song</h2>
+            <div class="input-row">
+                <label>Title</label>
+                <input type="text" id="song-title" value="BELVEDERE">
+            </div>
+            <div class="input-row">
+                <label>Artist</label>
+                <input type="text" id="song-artist" value="Dj Matrix x Ludwig x Nara">
+            </div>
+            <button class="special" id="btn-update-song" style="width:100%;">UPDATE & SHOW</button>
+        </div>
+
+        <!-- Statistics section for 6 moderators -->
+        <div class="section">
+            <h2>📊 Statistics (6 Moderators)</h2>
+            <div class="stats-grid" id="stats-container">
+                <!-- Generated by JavaScript -->
+            </div>
+            <button class="primary" id="btn-update-stats" style="width:100%; margin-top:20px;">UPDATE STATISTICS & SHOW</button>
+        </div>
+
+        <div class="status" id="status">Current overlay: none</div>
+        <div class="note">All changes sync instantly to the broadcast overlay via Firebase.</div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase config (same as overlay)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO52wApLEslVgfB5Y2TdzY5rPivOUEzBQ",
+            authDomain: "ardbr-2104b.firebaseapp.com",
+            databaseURL: "https://ardbr-2104b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "ardbr-2104b",
+            storageBucket: "ardbr-2104b.firebasestorage.app",
+            messagingSenderId: "1046269496627",
+            appId: "1:1046269496627:web:cdbb0c26a8568d0ca98246",
+            measurementId: "G-WNYTF03BX7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const overlayRef = db.ref('overlay');
+
+        // DOM elements
+        const statusDiv = document.getElementById('status');
+        const commentatorName = document.getElementById('commentator-name');
+        const commentatorTitle = document.getElementById('commentator-title');
+        const adStartTitle = document.getElementById('ad-start-title');
+        const adStartSubtitle = document.getElementById('ad-start-subtitle');
+        const adEndTitle = document.getElementById('ad-end-title');
+        const adEndSubtitle = document.getElementById('ad-end-subtitle');
+        const songTitle = document.getElementById('song-title');
+        const songArtist = document.getElementById('song-artist');
+        const statsContainer = document.getElementById('stats-container');
+
+        // Generate 6 moderator input rows
+        function createStatsInputs() {
+            let html = '';
+            for (let i = 0; i < 6; i++) {
+                html += `
+                    <div class="stats-item">
+                        <label>Moderator ${i+1}</label>
+                        <input type="text" class="stats-name" data-index="${i}" placeholder="Name" value="Mod ${i+1}">
+                        <input type="number" class="stats-minutes" data-index="${i}" placeholder="Minutes" value="0" min="0" style="margin-top:8px;">
+                        <input type="number" class="stats-slips" data-index="${i}" placeholder="Slips" value="0" min="0" style="margin-top:8px;">
+                    </div>
+                `;
+            }
+            statsContainer.innerHTML = html;
+        }
+        createStatsInputs();
+
+        // Update status from Firebase
+        overlayRef.on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            const active = data.active || 'none';
+            statusDiv.innerHTML = `Current overlay: <strong>${active}</strong>`;
+        });
+
+        // Helper to set overlay with data
+        function setOverlay(active, extraData = {}) {
+            const update = { active };
+            if (extraData.adStartData) update.adStartData = extraData.adStartData;
+            if (extraData.adEndData) update.adEndData = extraData.adEndData;
+            if (extraData.songData) update.songData = extraData.songData;
+            if (extraData.commentatorData) update.commentatorData = extraData.commentatorData;
+            if (extraData.statsData) update.statsData = extraData.statsData;
+            overlayRef.update(update);
+        }
+
+        // Collect stats from inputs
+        function getStatsFromInputs() {
+            const moderators = [];
+            for (let i = 0; i < 6; i++) {
+                const nameInput = document.querySelector(`.stats-name[data-index="${i}"]`);
+                const minutesInput = document.querySelector(`.stats-minutes[data-index="${i}"]`);
+                const slipsInput = document.querySelector(`.stats-slips[data-index="${i}"]`);
+                moderators.push({
+                    name: nameInput ? nameInput.value.trim() || `Moderator ${i+1}` : `Moderator ${i+1}`,
+                    minutes: minutesInput ? parseInt(minutesInput.value) || 0 : 0,
+                    slips: slipsInput ? parseInt(slipsInput.value) || 0 : 0
+                });
+            }
+            return moderators;
+        }
+
+        // Buttons
+        document.getElementById('btn-commentator').addEventListener('click', () => {
+            setOverlay('commentator', {
+                commentatorData: {
+                    name: commentatorName.value.trim() || 'Max Alija Ludwig',
+                    title: commentatorTitle.value.trim() || 'Special Guest'
+                }
+            });
+        });
+
+        document.getElementById('btn-medal').addEventListener('click', () => {
+            setOverlay('medal');
+        });
+
+        document.getElementById('btn-ad-start').addEventListener('click', () => {
+            setOverlay('ad-start', {
+                adStartData: {
+                    title: adStartTitle.value.trim() || 'START OF BLOCK',
+                    subtitle: adStartSubtitle.value.trim() || 'Advertisement'
+                }
+            });
+        });
+
+        document.getElementById('btn-ad-end').addEventListener('click', () => {
+            setOverlay('ad-end', {
+                adEndData: {
+                    title: adEndTitle.value.trim() || 'END OF BLOCK',
+                    subtitle: adEndSubtitle.value.trim() || "We'll be right back"
+                }
+            });
+        });
+
+        document.getElementById('btn-song1').addEventListener('click', () => {
+            setOverlay('song', {
+                songData: {
+                    title: 'BELVEDERE',
+                    artist: 'Dj Matrix x Ludwig x Nara'
+                }
+            });
+            songTitle.value = 'BELVEDERE';
+            songArtist.value = 'Dj Matrix x Ludwig x Nara';
+        });
+
+        document.getElementById('btn-song2').addEventListener('click', () => {
+            setOverlay('song', {
+                songData: {
+                    title: 'Milano Cortina',
+                    artist: 'Il Pagante x Ludwig'
+                }
+            });
+            songTitle.value = 'Milano Cortina';
+            songArtist.value = 'Il Pagante x Ludwig';
+        });
+
+        document.getElementById('btn-stats').addEventListener('click', () => {
+            setOverlay('stats', {
+                statsData: { moderators: getStatsFromInputs() }
+            });
+        });
+
+        document.getElementById('btn-end').addEventListener('click', () => {
+            setOverlay('end');
+        });
+
+        document.getElementById('btn-hide').addEventListener('click', () => {
+            setOverlay('none');
+        });
+
+        document.getElementById('btn-update-commentator').addEventListener('click', () => {
+            setOverlay('commentator', {
+                commentatorData: {
+                    name: commentatorName.value.trim() || 'Max Alija Ludwig',
+                    title: commentatorTitle.value.trim() || 'Special Guest'
+                }
+            });
+        });
+
+        document.getElementById('btn-update-ad-start').addEventListener('click', () => {
+            setOverlay('ad-start', {
+                adStartData: {
+                    title: adStartTitle.value.trim() || 'START OF BLOCK',
+                    subtitle: adStartSubtitle.value.trim() || 'Advertisement'
+                }
+            });
+        });
+
+        document.getElementById('btn-update-ad-end').addEventListener('click', () => {
+            setOverlay('ad-end', {
+                adEndData: {
+                    title: adEndTitle.value.trim() || 'END OF BLOCK',
+                    subtitle: adEndSubtitle.value.trim() || "We'll be right back"
+                }
+            });
+        });
+
+        document.getElementById('btn-update-song').addEventListener('click', () => {
+            setOverlay('song', {
+                songData: {
+                    title: songTitle.value.trim() || 'BELVEDERE',
+                    artist: songArtist.value.trim() || 'Artist'
+                }
+            });
+        });
+
+        document.getElementById('btn-update-stats').addEventListener('click', () => {
+            setOverlay('stats', {
+                statsData: { moderators: getStatsFromInputs() }
+            });
+        });
+    </script>
+</body>
+</html>
