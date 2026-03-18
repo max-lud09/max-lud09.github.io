@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lernstoff Kurzarbeit Musik – einfach erklärt</title>
+    <style>
+        /* Reset & Basis */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 4px;
+        }
+
+        /* Typografie – klar, ruhig, gut lesbar */
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #2c3e50;
+            color: #2c3e50;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 6px solid #3498db;
+            color: #2c3e50;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 1.8rem;
+            margin-bottom: 0.75rem;
+            color: #2c3e50;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 2rem;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+        }
+
+        /* Tabellen – übersichtlich, schlicht */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #eef2f5;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 8px;
+            border: 1px solid #bdc3c7;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            vertical-align: top;
+        }
+
+        .note-symbol {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            background: #f4f6f8;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .important {
+            font-weight: 700;
+            color: #c0392b;
+        }
+
+        .box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        hr {
+            margin: 2.5rem 0 1rem;
+            border: 1px dashed #ccc;
+        }
+
+        /* Druckoptimierung */
+        @media print {
+            body {
+                background: white;
+                padding: 0.5cm;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .download-btn {
+                display: none;
+            }
+            h2 {
+                break-after: avoid;
+            }
+            table {
+                break-inside: avoid;
+            }
+        }
+
+        /* Button zum Download */
+        .download-btn {
+            display: flex;
+            justify-content: center;
+            margin: 3rem 0 1rem;
+        }
+
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+            border: 1px solid #1a2632;
+        }
+
+        .btn:hover {
+            background-color: #1e2b37;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="content">
+        <h1>🎵 Kurzarbeit Musik – Alles, was du brauchst</h1>
+        <p style="font-size: 1.2rem;"><strong>Einfach erklärt – ohne Fachchinesisch. Für eine 4 oder besser.</strong></p>
+
+        <!-- Kapitel 1: Fachwörter -->
+        <h2>1. Fachwörter aus der Notenarbeit</h2>
+
+        <h3>Notenwerte – wie lange klingt ein Ton?</h3>
+        <table>
+            <tr><th>Note</th><th>Name</th><th>Dauer (Schläge)</th></tr>
+            <tr><td class="note-symbol">●</td><td>Ganze Note</td><td>4</td></tr>
+            <tr><td class="note-symbol">♩ (halber Kopf)</td><td>Halbe Note</td><td>2</td></tr>
+            <tr><td class="note-symbol">♪</td><td>Viertelnote</td><td>1</td></tr>
+            <tr><td class="note-symbol">♫ (zwei verbunden)</td><td>Achtelnote</td><td>½</td></tr>
+            <tr><td class="note-symbol">Sechzehntel</td><td>Sechzehntelnote</td><td>¼</td></tr>
+        </table>
+        <p><span class="important">Punktierte Note:</span> Ein Punkt hinter der Note verlängert sie um die Hälfte.<br> Beispiel: punktierte halbe Note = 2 + 1 = 3 Schläge.</p>
+        <p><span class="important">Triole:</span> Drei Noten mit einer 3 darüber. Sie dauern so lang wie zwei normale Noten. (z. B. drei Achtel = eine Viertel)</p>
+
+        <h3>Pausen – Zeichen der Stille</h3>
+        <table>
+            <tr><th>Pause</th><th>Name</th></tr>
+            <tr><td>dicker Strich <strong>unter</strong> der 4. Linie</td><td>Ganze Pause</td></tr>
+            <tr><td>dicker Strich <strong>auf</strong> der 3. Linie</td><td>Halbe Pause</td></tr>
+            <tr><td>wie eine geschwungene 3</td><td>Viertelpause</td></tr>
+            <tr><td>wie eine 7 mit Häkchen</td><td>Achtelpause</td></tr>
+        </table>
+
+        <h3>Dynamik – Lautstärke</h3>
+        <table>
+            <tr><th>Zeichen</th><th>Name</th><th>Bedeutung</th></tr>
+            <tr><td><strong>pp</strong></td><td>pianissimo</td><td>sehr leise</td></tr>
+            <tr><td><strong>p</strong></td><td>piano</td><td>leise</td></tr>
+            <tr><td><strong>mp</strong></td><td>mezzopiano</td><td>halbleise</td></tr>
+            <tr><td><strong>mf</strong></td><td>mezzoforte</td><td>halblaut</td></tr>
+            <tr><td><strong>f</strong></td><td>forte</td><td>laut</td></tr>
+            <tr><td><strong>ff</strong></td><td>fortissimo</td><td>sehr laut</td></tr>
+            <tr><td><strong>&lt;</strong></td><td>Crescendo</td><td>lauter werden</td></tr>
+            <tr><td><strong>&gt;</strong></td><td>Decrescendo</td><td>leiser werden</td></tr>
+        </table>
+
+        <h3>Artikulation – wie spielt man?</h3>
+        <table>
+            <tr><th>Zeichen</th><th>Name</th><th>Bedeutung</th></tr>
+            <tr><td>Punkt über/unter Note</td><td>Staccato</td><td>kurz, abgestoßen</td></tr>
+            <tr><td>Bogen über Noten</td><td>Legato</td><td>gebunden, fließend</td></tr>
+            <tr><td>> über/unter Note</td><td>Akzent</td><td>betont</td></tr>
+            <tr><td>Strich über/unter Note</td><td>Tenuto</td><td>gehalten, voll ausklingen</td></tr>
+        </table>
+
+        <h3>Rhythmik – der Puls</h3>
+        <p><span class="important">Taktart:</span> z. B. 4/4 (vier Viertel pro Takt), 3/4 (drei Viertel). Die obere Zahl = Anzahl Schläge, untere = Notenwert (4 = Viertel, 8 = Achtel).</p>
+        <p><span class="important">Auftakt:</span> Die Melodie beginnt nicht auf der 1, sondern vor dem ersten vollen Takt.</p>
+        <p><span class="important">Synkope:</span> Eine Note wird betont, die normalerweise unbetont ist.</p>
+
+        <h3>Vorzeichen – Tonhöhe ändern</h3>
+        <p><span class="note-symbol">♯</span> (Kreuz) = Ton wird einen Halbton höher.<br>
+        <span class="note-symbol">♭</span> (Be) = Ton wird einen Halbton tiefer.<br>
+        <span class="note-symbol">♮</span> (Auflösungszeichen) = hebt Vorzeichen auf.</p>
+        <div class="box">
+            <p><strong>Wichtig:</strong><br>
+            - Vorzeichen am <strong>Schlüssel</strong> (am Anfang der Zeile) gelten für die ganze Zeile und alle Oktaven.<br>
+            - Vorzeichen <strong>direkt vor einer Note</strong> gelten nur für diesen Takt und genau diese Tonhöhe.</p>
+        </div>
+
+        <hr>
+
+        <!-- Kapitel 2: Melodie einrichten -->
+        <h2>2. Melodie einrichten – Tonhöhe und Taktstriche</h2>
+        <h3>Notensystem und Schlüssel</h3>
+        <p><span class="important">Violinschlüssel</span> (G-Schlüssel): zeigt die 2. Linie an = g'.<br>
+        Linien von unten: e – g – h – d – f<br>
+        Zwischenräume: f – a – c – e</p>
+        <p><span class="important">Bassschlüssel</span> (F-Schlüssel): zeigt die 4. Linie an = f.<br>
+        Linien: g – h – d – f – a<br>
+        Zwischenräume: a – c – e – g</p>
+        <p><span class="important">Hilfslinien</span> – kleine Linien für Töne über oder unter dem System.</p>
+
+        <h3>Taktstriche setzen</h3>
+        <p>Zuerst die Taktart anschauen (z. B. 4/4). Die Notenwerte zusammenzählen. Immer wenn die Summe die Taktart erreicht, kommt ein Taktstrich.</p>
+
+        <h3>Notenhälse</h3>
+        <p>- Noten <strong>unter</strong> der Mittellinie: Hals nach oben<br>
+        - Noten <strong>über</strong> der Mittellinie: Hals nach unten</p>
+
+        <hr>
+
+        <!-- Kapitel 3: Oper -->
+        <h2>3. Einteilung der Oper</h2>
+        <h3>Was ist eine Oper?</h3>
+        <p>Ein Theaterstück mit Musik. Die Schauspieler singen, das Orchester spielt.</p>
+
+        <h3>Wichtige Teile einer Oper</h3>
+        <ul>
+            <li><strong>Ouvertüre</strong> – Vorspiel (nur Orchester)</li>
+            <li><strong>Rezitativ</strong> – Sprechgesang, treibt die Handlung voran</li>
+            <li><strong>Arie</strong> – gefühlvoller Gesang einer Figur (wie ein Solo-Lied)</li>
+            <li><strong>Ensemble</strong> – mehrere singen gleichzeitig (Duett, Terzett, …)</li>
+            <li><strong>Chor</strong> – viele Sänger auf der Bühne</li>
+            <li><strong>Ballett</strong> – Tanz (nicht in jeder Oper)</li>
+        </ul>
+
+        <h3>Weitere Begriffe</h3>
+        <ul>
+            <li><strong>Libretto</strong> – der Text der Oper</li>
+            <li><strong>Partitur</strong> – die Noten für alle Instrumente und Sänger (für den Dirigenten)</li>
+            <li><strong>Klavierauszug</strong> – Vereinfachung der Partitur für Klavier (zum Üben)</li>
+        </ul>
+
+        <h3>Beispiel: Aida von Verdi</h3>
+        <ul>
+            <li>4 Akte, spielt in Ägypten</li>
+            <li>Berühmte Stücke: Triumphmarsch, Radames' Arie "Celeste Aida"</li>
+        </ul>
+
+        <hr>
+
+        <!-- Kapitel 4: Stimmfächer -->
+        <h2>4. Stimmfächer – welche Stimme singt welche Rolle?</h2>
+        <h3>Frauenstimmen</h3>
+        <ul>
+            <li><strong>Sopran</strong> – hoch (z. B. Aida: dramatischer Sopran)</li>
+            <li><strong>Mezzosopran</strong> – mittel (z. B. Amneris: dramatischer Mezzosopran/Alt)</li>
+            <li><strong>Alt</strong> – tief</li>
+        </ul>
+        <h3>Männerstimmen</h3>
+        <ul>
+            <li><strong>Tenor</strong> – hoch (z. B. Radames: Heldentenor)</li>
+            <li><strong>Bariton</strong> – mittel (z. B. Amonasro: Heldenbariton)</li>
+            <li><strong>Bass</strong> – tief (z. B. Ramphis, König: seriöser Bass)</li>
+        </ul>
+
+        <hr>
+
+        <!-- Kapitel 5: Partitur -->
+        <h2>5. Aufbau einer Partitur</h2>
+        <h3>Reihenfolge der Instrumente (von oben nach unten)</h3>
+        <ol>
+            <li>Holzbläser (Flöten, Oboen, Klarinetten, Fagotte)</li>
+            <li>Blechbläser (Hörner, Trompeten, Posaunen, Tuba)</li>
+            <li>Pauken / Schlagzeug</li>
+            <li>Harfe / Klavier (falls vorhanden)</li>
+            <li>Singstimmen (Sopran, Alt, Tenor, Bass)</li>
+            <li>Streicher (Violine 1, Violine 2, Viola, Cello, Kontrabass)</li>
+        </ol>
+
+        <h3>Was steht noch in der Partitur?</h3>
+        <ul>
+            <li>Schlüssel, Vorzeichen, Taktangabe</li>
+            <li>Tempobezeichnungen (z. B. Allegro = schnell)</li>
+            <li>Dynamik (p, f, etc.)</li>
+        </ul>
+
+        <h3>Partitur vs. Klavierauszug</h3>
+        <ul>
+            <li><strong>Partitur:</strong> alles für Orchester und Sänger (für Dirigenten)</li>
+            <li><strong>Klavierauszug:</strong> Orchester auf Klavier reduziert (zum Üben)</li>
+        </ul>
+
+        <hr>
+
+        <!-- Kapitel 6: Tonleitern -->
+        <h2>6. Dur- und Moll-Tonleiter schreiben</h2>
+        <h3>Ganzton und Halbton</h3>
+        <p><strong>Ganzton</strong> = zwei Halbtöne (z. B. von C nach D)<br>
+        <strong>Halbton</strong> = ein Schritt zur nächsten Taste (z. B. von E nach F)</p>
+
+        <h3>Dur-Tonleiter</h3>
+        <p><strong>Muster:</strong> Ganz – Ganz – Halb – Ganz – Ganz – Ganz – Halb<br>
+        Beispiel C-Dur: C – D – E – F – G – A – H – C<br>
+        (Halbtonschritte zwischen E-F und H-C)</p>
+
+        <h3>Moll-Tonleiter</h3>
+        <p><strong>Natürliches Moll</strong><br>
+        Muster: Ganz – Halb – Ganz – Ganz – Halb – Ganz – Ganz<br>
+        Beispiel a-Moll: A – H – C – D – E – F – G – A<br>
+        (Halbtonschritte zwischen H-C und E-F)</p>
+
+        <p><strong>Paralleltonarten</strong><br>
+        Dur und Moll mit gleichen Vorzeichen. Beispiel: C-Dur und a-Moll haben beide keine Vorzeichen.<br>
+        Die Moll-Parallele liegt eine kleine Terz (3 Halbtöne) unter der Dur-Tonart.</p>
+
+        <p><strong>Harmonisches Moll</strong><br>
+        Wie natürliches Moll, aber der 7. Ton wird erhöht.<br>
+        Beispiel a-Moll harmonisch: A – H – C – D – E – F – <strong>Gis</strong> – A</p>
+
+        <p><strong>Melodisches Moll</strong><br>
+        Aufwärts: 6. und 7. Ton erhöht. Abwärts: wieder natürlich.<br>
+        Beispiel a-Moll melodisch aufwärts: A – H – C – D – E – <strong>Fis</strong> – <strong>Gis</strong> – A<br>
+        abwärts: A – G – F – E – D – C – H – A</p>
+
+        <p><strong>Leitton</strong><br>
+        Der 7. Ton, der zur Tonika (1. Ton) hinführt.<br>
+        - In Dur ist der Leitton einen Halbton unter der Tonika (z. B. H → C).<br>
+        - In natürlichem Moll ist der 7. Ton einen Ganzton unter der Tonika – deshalb braucht man im harmonischen Moll die Erhöhung, um einen Leitton zu bekommen.</p>
+
+        <hr style="margin: 3rem 0 1rem;">
+
+        <p style="text-align: right; font-style: italic;">Stoff komplett – für eine 4 reicht das völlig. Du schaffst das!</p>
+    </div>
+
+    <!-- Download-Button -->
+    <div class="download-btn">
+        <button class="btn" id="downloadWord">📥 Als Word-Datei herunterladen</button>
+    </div>
+
+    <footer>
+        Einfach ausdrucken oder in Word öffnen. | Keine Lernkarten, nur das Nötigste.
+    </footer>
+
+    <script>
+        document.getElementById('downloadWord').addEventListener('click', function() {
+            // Den Inhalt des Containers holen (alles, was gedruckt werden soll)
+            const content = document.getElementById('content').innerHTML;
+
+            // Header und Stil für Word-Dokument (gleiches CSS wie in der Seite)
+            const style = document.querySelector('style').innerHTML;
+
+            // Komplette HTML-Struktur für das Word-Dokument
+            const fullHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Kurzarbeit Musik – Lernstoff</title>
+    <style>
+        ${style}
+        /* Zusätzlich für Word: Seite einrichten */
+        body { background: white; padding: 2rem; }
+        .container { max-width: 100%; box-shadow: none; }
+        .download-btn { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        ${content}
+    </div>
+</body>
+</html>
+            `;
+
+            // Blob erzeugen und Download auslösen
+            const blob = new Blob([fullHTML], { type: 'application/msword' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Lernstoff_Musik.doc'; // .doc öffnet Word
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
