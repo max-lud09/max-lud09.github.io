@@ -1,3 +1,6 @@
+Below is the revised HTML document. It now uses BHRT's official blue and gold colours, includes a stylised header reminiscent of their branding, and maintains the elegant show-script layout. The "Download as PDF" button triggers the browser's print dialogue, producing a beautifully formatted PDF.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>80th Anniversary Gala Script · BHRT</title>
     <style>
-        /* Reset & base styles */
+        /* BHRT colour palette */
+        :root {
+            --bhrt-blue: #003399;
+            --bhrt-gold: #FFCC00;
+            --bhrt-dark-blue: #002266;
+            --bhrt-light-bg: #f0f5ff;
+            --bhrt-accent-red: #8b1e1e; /* keep for subtle accents */
+            --text-dark: #1e1e1e;
+            --text-soft: #2c3e50;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,22 +26,22 @@
         }
 
         body {
-            background: #f5f3f0;
+            background: #e5e9f0; /* soft grey-blue */
             font-family: 'Georgia', 'Times New Roman', Times, serif;
             line-height: 1.6;
-            color: #1e1e1e;
+            color: var(--text-dark);
             padding: 2rem 1rem;
         }
 
         /* print button */
         .print-btn-container {
             text-align: right;
-            max-width: 800px;
-            margin: 0 auto 2rem auto;
+            max-width: 900px;
+            margin: 0 auto 1.5rem auto;
         }
 
         .print-btn {
-            background: #8b1e1e;
+            background: var(--bhrt-blue);
             color: white;
             border: none;
             font-size: 1.1rem;
@@ -36,27 +49,66 @@
             padding: 0.75rem 2rem;
             border-radius: 40px;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(0,51,153,0.3);
+            transition: background 0.2s, transform 0.1s;
             font-weight: bold;
             letter-spacing: 0.5px;
+            border: 1px solid var(--bhrt-gold);
         }
 
         .print-btn:hover {
-            background: #a52a2a;
+            background: var(--bhrt-dark-blue);
+            transform: scale(1.02);
         }
 
-        /* main script container – resembles a printed page */
+        /* main script container – looks like a printed programme */
         .script {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            padding: 3rem 3rem 4rem 3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-radius: 4px;
+            padding: 3rem 3.5rem 4rem 3.5rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            border-top: 6px solid var(--bhrt-gold);
+            border-bottom: 2px solid var(--bhrt-blue);
         }
 
-        /* typography */
+        /* header with BHRT branding */
+        .script-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--bhrt-gold);
+            padding-bottom: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .bhrt-logo {
+            font-family: 'Arial', sans-serif;
+            font-weight: 900;
+            font-size: 2.2rem;
+            color: var(--bhrt-blue);
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .bhrt-logo span {
+            color: var(--bhrt-gold);
+            font-size: 1rem;
+            display: block;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+        .anniversary-badge {
+            background: var(--bhrt-blue);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 2px solid var(--bhrt-gold);
+        }
+
         h1 {
             font-size: 2.5rem;
             text-align: center;
@@ -64,15 +116,14 @@
             letter-spacing: 1px;
             margin-bottom: 0.25rem;
             text-transform: uppercase;
-            border-bottom: 2px solid #8b1e1e;
-            padding-bottom: 1rem;
+            color: var(--bhrt-blue);
             font-family: 'Arial', sans-serif;
         }
 
         .subhead {
             text-align: center;
             font-size: 1.2rem;
-            color: #3e3e3e;
+            color: var(--text-soft);
             margin-bottom: 2.5rem;
             font-style: italic;
         }
@@ -80,11 +131,11 @@
         h2 {
             font-size: 1.8rem;
             font-weight: normal;
-            margin: 2.5rem 0 1.5rem 0;
+            margin: 2.5rem 0 1.2rem 0;
             padding-bottom: 0.5rem;
-            border-bottom: 1px dashed #aaa;
+            border-bottom: 2px solid var(--bhrt-gold);
             font-family: 'Arial', sans-serif;
-            color: #2c3e50;
+            color: var(--bhrt-dark-blue);
         }
 
         h3 {
@@ -92,10 +143,9 @@
             font-weight: bold;
             margin: 2rem 0 1rem 0;
             font-family: 'Arial', sans-serif;
-            color: #2c3e50;
+            color: var(--bhrt-blue);
         }
 
-        /* character lines */
         p {
             margin: 0 0 0.5rem 0;
             font-size: 1.05rem;
@@ -103,7 +153,7 @@
 
         strong {
             font-weight: 600;
-            color: #1e3c5c;
+            color: var(--bhrt-dark-blue);
             font-family: 'Arial', sans-serif;
             font-size: 1.05rem;
             display: inline-block;
@@ -115,12 +165,12 @@
             font-style: italic;
         }
 
-        /* stage directions (larger blocks) */
+        /* stage directions */
         .stage {
             margin: 1.5rem 0;
             padding: 1rem 2rem;
-            background: #f9f9f9;
-            border-left: 4px solid #8b1e1e;
+            background: var(--bhrt-light-bg);
+            border-left: 4px solid var(--bhrt-blue);
             font-style: italic;
             color: #2b2b2b;
             border-radius: 0 8px 8px 0;
@@ -130,22 +180,23 @@
             margin: 0;
         }
 
-        /* testimonials (small excerpts) */
+        /* testimonials */
         .testimonial {
             margin: 1rem 0 1rem 2rem;
             padding: 0.5rem 1.5rem;
-            background: #f0f0f0;
+            background: #f9f4e8; /* warm off-white */
             border-radius: 20px;
             font-family: 'Arial', sans-serif;
             font-size: 1rem;
-            color: #1e3c5c;
+            color: var(--bhrt-dark-blue);
+            border-left: 3px solid var(--bhrt-gold);
         }
 
         .testimonial p {
             margin: 0;
         }
 
-        /* special formatting for the final montage description */
+        /* montage shots */
         .montage-shot {
             margin-left: 2rem;
             font-family: 'Arial', sans-serif;
@@ -153,11 +204,11 @@
             color: #3a3a3a;
         }
 
-        /* ensure page breaks in print */
+        /* print styles */
         @media print {
             body {
                 background: white;
-                padding: 0;
+                padding: 0.2in;
             }
             .print-btn-container {
                 display: none;
@@ -165,20 +216,22 @@
             .script {
                 max-width: 100%;
                 box-shadow: none;
-                padding: 1.5cm;
-            }
-            h1, h2, h3 {
-                page-break-after: avoid;
+                padding: 0.5in;
+                border-top: 3px solid #FFCC00;
+                border-bottom: 1px solid #003399;
             }
             .stage {
-                background: #f0f0f0;
+                background: #f0f5ff !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
             .testimonial {
-                background: #f0f0f0;
+                background: #f9f4e8 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            h1, h2, h3 {
+                color: #002266 !important;
             }
         }
     </style>
@@ -189,14 +242,23 @@
     </div>
 
     <div class="script">
-        <h1>80 GODINA: GLAS NACIJE<br>THE VOICE OF THE NATION</h1>
+        <!-- BHRT header -->
+        <div class="script-header">
+            <div class="bhrt-logo">
+                BHRT
+                <span>RADIO TELEVIZIJA BOSNE I HERCEGOVINE</span>
+            </div>
+            <div class="anniversary-badge">80 GODINA</div>
+        </div>
+
+        <h1>GLAS NACIJE · THE VOICE OF THE NATION</h1>
         <div class="subhead">Gala Script – 80th Anniversary of BHRT<br>National Theatre Sarajevo · 2026</div>
 
         <!-- ============= PART I ============= -->
         <h2>I. THE GRAND OPENING</h2>
-        <p class="stage"><em>The National Theatre. Silence. The audience stands as one. On the massive screen behind the stage, black and white footage plays silently—radio operators in 1945, the first television broadcast, the 1984 Olympics, war reporters, peace, and rebuilding.</em></p>
-        <p class="stage"><em>The Sarajevo Philharmonic Orchestra strikes up the first powerful chord of the Bosnian National Anthem. The anthem plays in full. As it concludes, the Orchestra transitions seamlessly into the European Anthem, "Ode to Joy." Then the EBU Anthem.</em></p>
-        <p class="stage"><em>As the final notes fade, the stage lights rise on MAX and AMIRA, standing center stage. They wait, letting the weight of the moment settle.</em></p>
+        <div class="stage"><em>The National Theatre. Silence. The audience stands as one. On the massive screen behind the stage, black and white footage plays silently—radio operators in 1945, the first television broadcast, the 1984 Olympics, war reporters, peace, and rebuilding.</em></div>
+        <div class="stage"><em>The Sarajevo Philharmonic Orchestra strikes up the first powerful chord of the Bosnian National Anthem. The anthem plays in full. As it concludes, the Orchestra transitions seamlessly into the European Anthem, "Ode to Joy." Then the EBU Anthem.</em></div>
+        <div class="stage"><em>As the final notes fade, the stage lights rise on MAX and AMIRA, standing center stage. They wait, letting the weight of the moment settle.</em></div>
 
         <p><strong>MAX:</strong> Dobro veče, Bosno i Hercegovino.</p>
         <p><strong>AMIRA:</strong> Dobro veče, Evropo.</p>
@@ -221,21 +283,21 @@
 
         <!-- ============= PART II ============= -->
         <h2>II. THE BIRTH OF A VOICE: 1945</h2>
-        <p class="stage"><em>The lights shift. The screen behind them comes alive with archival footage from 1945. Grainy images of Sarajevo in ruins, of liberation, of people gathered around the first radio sets.</em></p>
+        <div class="stage"><em>The lights shift. The screen behind them comes alive with archival footage from 1945. Grainy images of Sarajevo in ruins, of liberation, of people gathered around the first radio sets.</em></div>
         <p><strong>MAX:</strong> April 10, 1945. Sarajevo is liberated. And on that very day, from a small studio, a voice crackles through the static: "Ovdje Radio Sarajevo." Here is Radio Sarajevo.</p>
         <p><strong>AMIRA:</strong> Those were the first words. Think of what they meant to a city that had endured four years of occupation, of fear, of silence. Suddenly, there was a voice. Their voice.</p>
         <p><strong>MAX:</strong> In those first years, Radio Sarajevo operated under the watchful eye of the new communist government. It was, first and foremost, an ideological voice. But even then, something else was stirring.</p>
         <p><strong>AMIRA:</strong> The legendary journalist Zija Dizdarević would later describe this period as the transformation from a "saopćavajući" medij—a medium that simply announced—into a "razgovarajući" medij—a medium that conversed with its people.</p>
         <p><strong>MAX:</strong> From monologue to dialogue. From broadcasting at people to speaking with them. That transformation would take decades. But it began here, in these first crackling broadcasts.</p>
         <p><strong>AMIRA:</strong> And alongside the news and the propaganda, something else was being born. Music. Culture. The sounds of a nation.</p>
-        <p class="stage"><em>The screen shows footage of early folk musicians recording in makeshift studios.</em></p>
+        <div class="stage"><em>The screen shows footage of early folk musicians recording in makeshift studios.</em></div>
         <p><strong>MAX:</strong> In 1947, the first freelance folk ensembles began recording for Radio Sarajevo. They didn't know it then, but they were laying the foundation for something extraordinary—a musical archive that would one day hold over 50,000 recordings.</p>
         <p><strong>AMIRA:</strong> Fifty thousand. Think of that number. Folk songs from every corner of Bosnia. Sevdalinke passed down through generations. Tamburica orchestras. Pop and jazz from the decades that followed. All preserved. All protected.</p>
         <p><strong>MAX:</strong> The Narodni orkestar, the Tamburaški orkestar—they weren't just musicians. They were archivists of the soul. They recorded not for today, but for tomorrow. For us, tonight, listening to their echoes.</p>
 
         <!-- ============= PART III ============= -->
         <h2>III. THE TELEVISION ARRIVES: 1961</h2>
-        <p class="stage"><em>The footage shifts. Grainy black and white gives way to slightly clearer images. Television sets in shop windows. Crowds gathered on the streets, staring at small screens.</em></p>
+        <div class="stage"><em>The footage shifts. Grainy black and white gives way to slightly clearer images. Television sets in shop windows. Crowds gathered on the streets, staring at small screens.</em></div>
         <p><strong>AMIRA:</strong> 1961. A new miracle arrives in Bosnian homes. Television.</p>
         <p><strong>MAX:</strong> Imagine it. Moving images. Your neighbors, your leaders, your entertainers—right there in your living room. Magic.</p>
         <p><strong>AMIRA:</strong> In those early years, the technology was primitive by today's standards. But the ambition was not. Television Sarajevo began to find its feet, its voice, its purpose.</p>
@@ -245,23 +307,23 @@
 
         <!-- ============= PART IV ============= -->
         <h2>IV. THE GOLDEN ERA: 1970s AND 1980s</h2>
-        <p class="stage"><em>The screen bursts into color. Vibrant footage from the 1970s and 80s. Music shows. Young people. Energy. Creativity.</em></p>
+        <div class="stage"><em>The screen bursts into color. Vibrant footage from the 1970s and 80s. Music shows. Young people. Energy. Creativity.</em></div>
         <p><strong>AMIRA:</strong> And then came the 1970s and 1980s. The golden era.</p>
         <p><strong>MAX:</strong> This was when Television Sarajevo truly came into its own. A generation of professionals—visionaries, really—created content that was celebrated not just in Yugoslavia, but across Europe and beyond.</p>
         <p><strong>AMIRA:</strong> The cultural and art programming department, led by Slobodan Terzić, began to innovate in ways that seem astonishing even today. They revamped the schedule. They filled prime time with new shows. They invested in young people.</p>
         <p><strong>MAX:</strong> Timothy John Byford, a British expat, created "Nedeljni Zabavnik"—The Sunday Entertainer—a children's show that shaped the imaginations of an entire generation.</p>
         <p><strong>AMIRA:</strong> And then there was "Top Lista Nadrealista." The Top List of the Surrealists.</p>
-        <p class="stage"><em>The audience laughs and applauds at the mention. Footage plays of the legendary comedy group.</em></p>
+        <div class="stage"><em>The audience laughs and applauds at the mention. Footage plays of the legendary comedy group.</em></div>
         <p><strong>MAX:</strong> A group of eccentric Sarajevan lads with a genius for surreal humor, satire, and black comedy. They started on radio—on Boro Kontić's show "Primus" on Saturday mornings.</p>
         <p><strong>AMIRA:</strong> The first edition was a mock takeover of the radio station by guerrillas demanding a new editorial direction. They wanted the music policy changed from schlager to punk.</p>
         <p><strong>MAX:</strong> And here's the thing—it wasn't just fiction. The members of Top Lista Nadrealista were also musicians from the bands Zabranjeno Pušenje, Crvena Jabuka, and Elvis J. Kurtović. They were the heart of the Sarajevo rock scene.</p>
         <p><strong>AMIRA:</strong> In the summer of 1984, their first television appearance shook the establishment. But the audience? The audience loved them. They became stars across the entire country.</p>
-        <p class="stage"><em>The screen shows footage of young bands performing. Bijelo Dugme. Crvena Jabuka. Plavi Orkestar. Dino Merlin.</em></p>
+        <div class="stage"><em>The screen shows footage of young bands performing. Bijelo Dugme. Crvena Jabuka. Plavi Orkestar. Dino Merlin.</em></div>
         <p><strong>MAX:</strong> This was the moment when Television Sarajevo became a launching pad for a generation. Goran Bregović's Bijelo Dugme—already Yugoslavia's biggest band—but also the new wave. Crvena Jabuka. Plavi Orkestar. Dino Merlin.</p>
         <p><strong>AMIRA:</strong> They all got their first television breaks here. Their first music videos produced by our studios. Their first national audiences reached through our signals.</p>
         <p><strong>MAX:</strong> And it wasn't just music. Filmmakers like Emir Kusturica and Ademir Kenović worked with us or for us. The creative energy was extraordinary.</p>
         <p><strong>AMIRA:</strong> But perhaps the most radical innovation was happening on radio.</p>
-        <p class="stage"><em>The screen shows footage of young people in a radio studio. Late 1980s fashion. Energy. Excitement.</em></p>
+        <div class="stage"><em>The screen shows footage of young people in a radio studio. Late 1980s fashion. Energy. Excitement.</em></div>
         <p><strong>MAX:</strong> April 9, 1987. The Omladinski Program—Youth Program—of Radio Sarajevo 2 went live. The editor-in-chief was Boro Kontić, a true visionary with a knack for finding new talent.</p>
         <p><strong>AMIRA:</strong> The programming was created by a core team of unknown twenty-somethings and the occasional teenager. Seventeen-year-olds making radio that would define a generation.</p>
         <p><strong>MAX:</strong> They didn't play mainstream Yugoslav bands. Too commercial. They played acid house and hip-hop—completely new sounds just emerging from London and New York. They interviewed underground artists. They pushed boundaries.</p>
@@ -270,7 +332,7 @@
 
         <!-- ============= PART V ============= -->
         <h2>V. 1984: THE WORLD WATCHES SARAJEVO</h2>
-        <p class="stage"><em>The footage shifts to the most iconic images in the nation's history. February 1984. The Olympic cauldron. The snow. Vučko dancing. The energy is electric.</em></p>
+        <div class="stage"><em>The footage shifts to the most iconic images in the nation's history. February 1984. The Olympic cauldron. The snow. Vučko dancing. The energy is electric.</em></div>
         <p><strong>AMIRA:</strong> And then came 1984.</p>
         <p><strong>MAX:</strong> Sarajevo. The Winter Olympics. The world descended on this city, and we were ready.</p>
         <p><strong>AMIRA:</strong> Television Sarajevo was the host broadcaster. The International Broadcast Centre was in our building. For sixteen days, the world watched through our eyes.</p>
@@ -278,7 +340,7 @@
         <p><strong>AMIRA:</strong> We showed the world our best. And the world fell in love with us.</p>
         <p><strong>MAX:</strong> The Olympics gave us more than memories. They gave us technology. The most advanced equipment available. And with that technology, our production team began to rival our counterparts in Belgrade and Zagreb.</p>
         <p><strong>AMIRA:</strong> We were no longer a regional broadcaster. We were international.</p>
-        <p class="stage"><em>The footage shifts. The Cold War ending. The Iron Curtain weakening. New possibilities.</em></p>
+        <div class="stage"><em>The footage shifts. The Cold War ending. The Iron Curtain weakening. New possibilities.</em></div>
         <p><strong>MAX:</strong> The late 1980s were a time of sweeping change—not just in Yugoslavia, but across eastern and central Europe. And Television Sarajevo was at the forefront.</p>
         <p><strong>AMIRA:</strong> We started buying Western programming. In an experimental late-night slot called "Noć i Dan"—Night and Day—audiences could watch mainstream British comedies like "'Allo 'Allo!" and "Only Fools and Horses."</p>
         <p><strong>MAX:</strong> But also "Monty Python's Flying Circus." The surreal humor of Monty Python had a lasting influence on our own comedians, our own sensibility. You can hear it in Top Lista Nadrealista. You can hear it in the Omladinski Program.</p>
@@ -287,18 +349,18 @@
 
         <!-- ============= PART VI ============= -->
         <h2>VI. TV SA3: THE REBELLIOUS CHILD</h2>
-        <p class="stage"><em>The screen shows footage from a new channel. Fresh graphics. Young presenters. A different energy.</em></p>
+        <div class="stage"><em>The screen shows footage from a new channel. Fresh graphics. Young presenters. A different energy.</em></div>
         <p><strong>AMIRA:</strong> June 1990. A milestone in our rebellious timeline. The third channel became TV Sa3.</p>
         <p><strong>MAX:</strong> It operated within the structure of Television Sarajevo, but with a radical difference: unconstrained programming choices. No ideological oversight. No party supervision.</p>
         <p><strong>AMIRA:</strong> TV Sa3 filled a gap in the market for an urban audience of all ages. And it became something unprecedented—the first profitable television channel in Yugoslavia, funded solely by advertising and sponsorship.</p>
         <p><strong>MAX:</strong> The editor-in-chief was Haris Kulenović, one of a new wave of executives who took chances on young talent. They put people on air based on merit, not connections. In a system built on nepotism, this was revolutionary.</p>
         <p><strong>AMIRA:</strong> A few of us from the Omladinski Program were poached to work on Sa3—including a young presenter named Lida Hujić, whose story is part of our history tonight.</p>
-        <p class="stage"><em>The screen shows footage of "Nunut Show" and "Monalida."</em></p>
+        <div class="stage"><em>The screen shows footage of "Nunut Show" and "Monalida."</em></div>
         <p><strong>MAX:</strong> Lida and Amel Baftić created the "Nunut Show"—named after Lida's teddy bear. A truth-or-dare game with celebrity guests, live in the studio. Audacious. Unpredictable. Completely new.</p>
         <p><strong>AMIRA:</strong> The first episode became the subject of a phone-in radio program on a local station. People called to discuss what Lida was wearing—a yellow dress with white polka dots and big puff sleeves. (She later said, in her defense, it was the 1980s.)</p>
         <p><strong>MAX:</strong> But the real coup was "Monalida"—Lida's Western-oriented show. A passport to the world that the Iron Curtain had largely shielded us from.</p>
         <p><strong>AMIRA:</strong> They filmed on location in Paris. They did live studio interviews with international stars. And then came the biggest coup of all.</p>
-        <p class="stage"><em>The screen shows footage of MTV. Young people watching. The energy of a new era.</em></p>
+        <div class="stage"><em>The screen shows footage of MTV. Young people watching. The energy of a new era.</em></div>
         <p><strong>MAX:</strong> MTV Europe. The first all-music channel. For young people in communist countries, MTV was more than entertainment—it was freedom. Cosmopolitan. Progressive. A glimpse of the world beyond.</p>
         <p><strong>AMIRA:</strong> Lida and her team convinced MTV Europe VJ Paul King to come to Sarajevo and appear on the show. Think about that. A country that barely registered for such a global network. And they said yes.</p>
         <p><strong>MAX:</strong> After they signed the agreement, another request came in from MTV. Could they guarantee Paul King's safety? There was no time for official paperwork. Executive producer Ivan Stojanović took it upon himself to be the personal guarantor.</p>
@@ -306,11 +368,11 @@
         <p><strong>MAX:</strong> For Lida personally, the visit had lasting repercussions. She and Paul King fell for each other. She moved to London, planning to continue "Monalida" from there.</p>
         <p><strong>AMIRA:</strong> The first batch of London location footage was sent in March 1992. A month before the violent breakup of Yugoslavia turned its sights on Bosnia and Herzegovina.</p>
         <p><strong>MAX:</strong> The show was never broadcast as planned. War was coming.</p>
-        <p class="stage"><em>A long pause. The mood shifts.</em></p>
+        <div class="stage"><em>A long pause. The mood shifts.</em></div>
 
         <!-- ============= PART VII ============= -->
         <h2>VII. THE SIEGE: 1992-1996</h2>
-        <p class="stage"><em>The screen darkens. Footage of war. Smoke rising from the city. Snipers. Destruction. The audience grows silent.</em></p>
+        <div class="stage"><em>The screen darkens. Footage of war. Smoke rising from the city. Snipers. Destruction. The audience grows silent.</em></div>
         <p><strong>AMIRA:</strong> April 1992. The siege of Sarajevo began. It would last 1,425 days. The longest siege of a capital city in modern warfare.</p>
         <p><strong>MAX:</strong> And through it all, the signal never stopped.</p>
         <p><strong>AMIRA:</strong> Think about what that meant. While the city was surrounded, while snipers targeted civilians on the streets, while grenades fell day and night—Radio Sarajevo kept broadcasting. Television Sarajevo kept transmitting.</p>
@@ -325,18 +387,18 @@
         <p><strong>MAX:</strong> The director of BHRT today, Belmin Karamehmedović, put it this way at our 80th anniversary celebration: "During the war, the light of Radio Television Bosnia and Herzegovina never stopped shining. It never stopped working."</p>
         <p><strong>AMIRA:</strong> But then he added something that haunts us tonight.</p>
         <p><strong>MAX:</strong> "Today, BHRT is not being destroyed by grenades. Today, it is being destroyed by the silence of the system. By forgetting. By ignoring."</p>
-        <p class="stage"><em>A long silence.</em></p>
+        <div class="stage"><em>A long silence.</em></div>
 
         <!-- ============= PART VIII ============= -->
         <h2>VIII. THE ARCHIVE: MEMORY PRESERVED</h2>
-        <p class="stage"><em>The screen shows images of the archive. Rows and rows of film canisters. Magnetic tapes. Technicians carefully handling fragile reels.</em></p>
+        <div class="stage"><em>The screen shows images of the archive. Rows and rows of film canisters. Magnetic tapes. Technicians carefully handling fragile reels.</em></div>
         <p><strong>AMIRA:</strong> After the war, we discovered that much had been lost. Or so we thought.</p>
         <p><strong>MAX:</strong> For years, the world believed the footage of the 1984 Olympics was gone forever. Destroyed. Burned. Lost.</p>
         <p><strong>AMIRA:</strong> But the tapes were hidden. Scattered. Some were in the basement of our building—the same building that had been shelled day after day.</p>
         <p><strong>MAX:</strong> Years later, a project began. BHRT, together with the International Olympic Committee, started searching. And we found them.</p>
         <p><strong>AMIRA:</strong> Sixty-four tapes. Sixty-four reels of history. Buried in the archives, damaged but not destroyed.</p>
         <p><strong>MAX:</strong> We digitized them. Restored them. Frame by frame, we brought 1984 back to life.</p>
-        <p class="stage"><em>The screen shows the restored footage—crisp, clear, beautiful. The cauldron burning bright again.</em></p>
+        <div class="stage"><em>The screen shows the restored footage—crisp, clear, beautiful. The cauldron burning bright again.</em></div>
         <p><strong>AMIRA:</strong> We didn't just save our history. We saved the world's history.</p>
         <p><strong>MAX:</strong> But the Olympics are just one part of our archive. The Music Production archive holds over 50,000 recordings. 28,000 magnetic tapes. 18,500 vinyl records. 4,000 compact discs.</p>
         <p><strong>AMIRA:</strong> Folk songs from every region. Sevdalinke passed down through generations. Jazz concerts. Pop recordings. Children's programs. Political speeches. Ordinary conversations.</p>
@@ -347,7 +409,7 @@
 
         <!-- ============= PART IX ============= -->
         <h2>IX. THE STRUGGLE TODAY</h2>
-        <p class="stage"><em>The stage dims. A single spotlight on MAX and AMIRA. Behind them, the screen shows the Sivi Dom—the Grey Home—lit against the night sky. The mood shifts. Serious. Determined.</em></p>
+        <div class="stage"><em>The stage dims. A single spotlight on MAX and AMIRA. Behind them, the screen shows the Sivi Dom—the Grey Home—lit against the night sky. The mood shifts. Serious. Determined.</em></div>
         <p><strong>MAX:</strong> Eighty years. We have celebrated tonight. The glories. The innovations. The triumphs.</p>
         <p><strong>AMIRA:</strong> But if we are to be honest with you—if we are to be the public service you deserve—we must also speak of the struggle.</p>
         <p><strong>MAX:</strong> The Grey Home is fighting for its life.</p>
@@ -360,12 +422,12 @@
         <p><strong>AMIRA:</strong> We have seen campaigns launched against our very existence. We have seen the law violated, again and again, to our detriment.</p>
         <p><strong>MAX:</strong> And yet, we are still here.</p>
         <p><strong>AMIRA:</strong> Because of you.</p>
-        <p class="stage"><em>The screen fills with faces. Ordinary citizens. An elderly man in a coffee shop. A young student. A mother. A war veteran. They speak, one after another.</em></p>
+        <div class="stage"><em>The screen fills with faces. Ordinary citizens. An elderly man in a coffee shop. A young student. A mother. A war veteran. They speak, one after another.</em></div>
         <div class="testimonial"><p><strong>ELDERLY MAN:</strong> Radio Sarajevo... that's my childhood. I grew up with that voice.</p></div>
         <div class="testimonial"><p><strong>STUDENT:</strong> I watch BHRT online. I study abroad. It makes me feel connected to home.</p></div>
         <div class="testimonial"><p><strong>MOTHER:</strong> It's the only channel my children and my parents can agree on. It's neutral. It's ours.</p></div>
         <div class="testimonial"><p><strong>VETERAN:</strong> They broadcast during the siege. Every single day. They never stopped. So I never stopped watching.</p></div>
-        <p class="stage"><em>The testimonials fade. MAX and AMIRA stand in silence for a moment.</em></p>
+        <div class="stage"><em>The testimonials fade. MAX and AMIRA stand in silence for a moment.</em></div>
         <p><strong>AMIRA:</strong> The Slovenian journalist and communication expert Lenart Šetinc wrote in a monograph about Radio Sarajevo: "The battle for a professional, autonomous, and independent public broadcaster will never be finished."</p>
         <p><strong>MAX:</strong> He wrote that ten years ago. It is more true today than ever.</p>
         <p><strong>AMIRA:</strong> A country without a strong public broadcaster is a country without a mirror.</p>
@@ -382,11 +444,11 @@
         <p><strong>MAX:</strong> Ne gasite BHRT. Strengthen it. Fund it. Protect it.</p>
         <p><strong>AMIRA:</strong> Not for us. For you. For your right to know. For your right to be seen and heard.</p>
         <p><strong>MAX:</strong> This is not the plea of a dying institution. This is the roar of a living one.</p>
-        <p class="stage"><em>The audience erupts in applause. MAX and AMIRA stand together, letting the moment stretch.</em></p>
+        <div class="stage"><em>The audience erupts in applause. MAX and AMIRA stand together, letting the moment stretch.</em></div>
 
         <!-- ============= PART X ============= -->
         <h2>X. THE ORCHESTRA AND THE ARCHIVE</h2>
-        <p class="stage"><em>The applause fades. The lights shift to include the orchestra pit, where the Sarajevo Philharmonic and the Orchestra of the Music Production of BHRT are visible.</em></p>
+        <div class="stage"><em>The applause fades. The lights shift to include the orchestra pit, where the Sarajevo Philharmonic and the Orchestra of the Music Production of BHRT are visible.</em></div>
         <p><strong>AMIRA:</strong> Tonight, we are accompanied by the Sarajevo Philharmonic Orchestra, the Opera Choir of the National Theatre, and the orchestras of the Music Production of BHRT.</p>
         <p><strong>MAX:</strong> The Narodni orkestar, preserving our folk traditions since 1947. The Tamburaški orkestar, keeping the sound of tamburica alive since 1945. The Zabavni orkestar, bringing popular music to generations of listeners.</p>
         <p><strong>AMIRA:</strong> These musicians are not just performers. They are archivists. Every note they play connects us to the past.</p>
@@ -397,17 +459,17 @@
 
         <!-- ============= PART XI ============= -->
         <h2>XI. TOMORROW</h2>
-        <p class="stage"><em>The screen displays the coming week's programming. Clean graphics. Modern design.</em></p>
+        <div class="stage"><em>The screen displays the coming week's programming. Clean graphics. Modern design.</em></div>
         <p><strong>AMIRA:</strong> Tomorrow morning at 7:30, Dobro jutro Bosno brings you the news you need to start your day. The same dedication. The same integrity. The same voice.</p>
         <p><strong>MAX:</strong> At 8:00 PM, Dnevnik. The most trusted news broadcast in the country. It has been for eighty years. It will be for eighty more.</p>
         <p><strong>AMIRA:</strong> This weekend, a special documentary on the restoration of the 1984 Olympic footage. And a concert from this very theatre, featuring artists from across Bosnia and Herzegovina.</p>
         <p><strong>MAX:</strong> We are your window to the world. We are your mirror. We always have been. We always will be.</p>
-        <p class="stage"><em>The final montage begins. A sweeping, emotional journey through eighty years. 1945 radio operators. 1961 first television broadcasts. 1984 Olympic celebrations. War reporters in flak jackets. Peace negotiations. Cultural festivals. Children being born on screen. The current news team standing in the damaged but still-standing Sivi Dom. The music swells. The final image: the BHRT logo, glowing. Text beneath it: "Uvijek uz vas. / Always with you."</em></p>
-        <p class="stage"><em>The montage ends. Silence. Then applause, building, sustained.</em></p>
+        <div class="stage"><em>The final montage begins. A sweeping, emotional journey through eighty years. 1945 radio operators. 1961 first television broadcasts. 1984 Olympic celebrations. War reporters in flak jackets. Peace negotiations. Cultural festivals. Children being born on screen. The current news team standing in the damaged but still-standing Sivi Dom. The music swells. The final image: the BHRT logo, glowing. Text beneath it: "Uvijek uz vas. / Always with you."</em></div>
+        <div class="stage"><em>The montage ends. Silence. Then applause, building, sustained.</em></div>
 
         <!-- ============= PART XII ============= -->
         <h2>XII. FINAL FAREWELL</h2>
-        <p class="stage"><em>MAX and AMIRA walk to the edge of the stage. The orchestra begins a soft, traditional melody. The atmosphere is intimate now, personal.</em></p>
+        <div class="stage"><em>MAX and AMIRA walk to the edge of the stage. The orchestra begins a soft, traditional melody. The atmosphere is intimate now, personal.</em></div>
         <p><strong>MAX:</strong> You know, Amira, standing here tonight, I keep thinking about all the voices that came before us.</p>
         <p><strong>AMIRA:</strong> The journalists who reported from the front lines. The technicians who kept the signal alive during the siege. The announcers who read the news calmly, even when they didn't know if they would make it home that night.</p>
         <p><strong>MAX:</strong> The visionaries who created the Omladinski Program. The rebels who launched TV Sa3. The musicians who recorded for our archives, knowing that someone, someday, would need to hear their songs.</p>
@@ -422,7 +484,7 @@
         <p><strong>AMIRA:</strong> Thank you for listening.</p>
         <p><strong>MAX:</strong> Thank you for watching.</p>
         <p><strong>AMIRA:</strong> Thank you for eighty years of trust.</p>
-        <p class="stage"><em>They clasp hands. They smile. They look out at the audience, at the cameras, at the nation.</em></p>
+        <div class="stage"><em>They clasp hands. They smile. They look out at the audience, at the cameras, at the nation.</em></div>
         <p><strong>MAX:</strong> From the officially-confirmed voice of the nation—</p>
         <p><strong>AMIRA:</strong> From the Power Couple of the Dolomites, still standing, still broadcasting—</p>
         <p><strong>MAX:</strong> (Grinning) And still thinking about pizza, even after eighty years—</p>
@@ -430,12 +492,23 @@
         <p><strong>MAX:</strong> Laku noć, Bosno i Hercegovino.</p>
         <p><strong>AMIRA:</strong> Laku noć, svijete.</p>
         <p><strong>MAX & AMIRA:</strong> Vidimo se sutra u 8:00!</p>
-        <p class="stage"><em>They bow. The orchestra swells. Confetti in the colors of the Bosnian flag falls gently. The entire cast—technicians, journalists, anchors, camera operators, musicians—joins them on stage. The applause is thunderous, sustained, loving.</em></p>
-        <p class="stage"><em>The camera holds on MAX and AMIRA, still holding hands, still smiling. Then slowly, the lights fade.</em></p>
-        <p class="stage"><em>The screen glows one last time:</em><br>
-        <strong>BHRT — UVJEK UZ VAS — ALWAYS WITH YOU<br>1945 — 2026</strong></p>
-        <p class="stage"><em>Fade to black.</em></p>
-        <p style="text-align: center; margin-top: 3rem;"><strong>END</strong></p>
+        <div class="stage"><em>They bow. The orchestra swells. Confetti in the colors of the Bosnian flag falls gently. The entire cast—technicians, journalists, anchors, camera operators, musicians—joins them on stage. The applause is thunderous, sustained, loving.</em></div>
+        <div class="stage"><em>The camera holds on MAX and AMIRA, still holding hands, still smiling. Then slowly, the lights fade.</em></div>
+        <div class="stage"><em>The screen glows one last time:</em><br>
+        <strong style="font-size:1.5rem; color:var(--bhrt-blue);">BHRT — UVJEK UZ VAS — ALWAYS WITH YOU</strong><br>
+        <strong style="color:var(--bhrt-gold);">1945 — 2026</strong></div>
+        <div class="stage"><em>Fade to black.</em></div>
+        <p style="text-align: center; margin-top: 3rem; font-weight: bold; color: var(--bhrt-dark-blue);">END</p>
     </div>
 </body>
 </html>
+```
+
+Key Improvements
+
+· BHRT Branding: Added a header with stylised logo and "80 GODINA" badge.
+· Colour Palette: Deep blue (#003399) for headings, button, and accents; gold (#FFCC00) for borders and highlights.
+· Professional Script Look: Clean layout with ample margins, stage directions in light blue backgrounds, testimonials with gold left borders.
+· Print-Ready: The "Download as PDF" button triggers the browser's print dialog. Print styles preserve colours and remove the button.
+
+Simply open this HTML file in any modern browser and click the button to save a beautifully formatted PDF of the complete gala script.
